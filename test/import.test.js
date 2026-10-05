@@ -146,3 +146,64 @@ test('import refusé sans jeton CSRF ou sans connexion', async () => {
   await login(agent);
   await agent.post('/admin/programmes/1/import').field('_csrf', 'faux').attach('fichier', file, 'l.csv').expect(403);
 });
+
+test('import programmes + lots : crée les programmes en brouillon, regroupe les lots, signale les erreurs', async () => {
+  const { analyzeMulti, applyMulti } = require('../src/lib/importLots');
+  const { db, models } = await makeApp();
+  const head = 'programme;ville;code_postal;reference;typologie;surface;prix_ttc;statut';
+  const buf = Buffer.from([head,
+    'Résidence Neuve;Serris;77700;A01;T2;44;230000;Disponible',
+    'Résidence Neuve;Serris;77700;A02;T3;66;310000;Vendu',
+    'Résidence Neuve;Chelles;77700;A03;T3;66;310000;Vendu',
+    'Villa Horizon;Villiers-sur-Marne;94350;ZZ1;T2;40;250000;Disponible',
+    'Villa Horizon;Villiers-sur-Marne;94350;ZZ2;T9;40;250000;Disponible',
+    'Mauvais CP;Paris;12345;C01;T2;40;250000;Disponible',
+  ].join('\n'));
+  const existing = models.programmes.listAll({ includeArchived: true }).map((p) => ({ id: p.id, slug: p.slug, references: models.lots.references(p.id) }));
+  const a = analyzeMulti(await parseFile(buf, 'p.csv'), existing);
+  assert.deepEqual(a.fileErrors, []);
+  assert.equal(a.summary.programmes, 3);
+  assert.equal(a.summary.newProgrammes, 2);
+  const byName = Object.fromEntries(a.programmes.map((p) => [p.value.name, p]));
+  assert.equal(byName['Résidence Neuve'].isNew, true);
+  assert.equal(byName['Résidence Neuve'].analysis.summary.valid, 2);
+  assert.match(byName['Résidence Neuve'].analysis.rows[2].errors.join(' '), /Ville différente/);
+  assert.equal(byName['Résidence Neuve'].analysis.rows[2].line, 4);
+  assert.equal(byName['Villa Horizon'].isNew, false);
+  assert.equal(byName['Villa Horizon'].analysis.rows[1].line, 6);
+  assert.match(byName['Villa Horizon'].analysis.rows[1].errors.join(' '), /Typologie/);
+  assert.equal(byName['Mauvais CP'].usable, false);
+
+  const before = models.programmes.listAll({ includeArchived: true }).length;
+  const done = applyMulti(db, models, a);
+  assert.deepEqual(done, { lots: 3, created: 1 });
+  assert.equal(models.programmes.listAll({ includeArchived: true }).length, before + 1);
+  const p = models.programmes.findBySlug('residence-neuve');
+  assert.equal(p.status, 'brouillon');
+  assert.equal(models.lots.listByProgramme(p.id).length, 2);
+  assert.ok(models.lots.findByRef(models.programmes.findBySlug('villa-horizon').id, 'ZZ1'));
+});
+
+test('import programmes + lots : colonnes manquantes et parcours back-office', async () => {
+  const { analyzeMulti } = require('../src/lib/importLots');
+  const a = analyzeMulti(await parseFile(Buffer.from('reference;typologie;surface;prix_ttc\nA1;T2;40;200000\n'), 'p.csv'), []);
+  assert.match(a.fileErrors[0], /programme, ville/);
+
+  const { app, models } = await makeApp();
+  const agent = request.agent(app);
+  const csrf = await login(agent);
+  const file = path.join(__dirname, '..', 'exemples', 'programmes-et-lots.csv');
+  const preview = await agent.post('/admin/import').field('_csrf', csrf).attach('fichier', file).expect(200);
+  assert.match(preview.text, /Résidence des Tilleuls/);
+  assert.match(preview.text, /Nouveau programme/);
+  assert.equal(models.programmes.findBySlug('residence-des-tilleuls'), undefined);
+  const token = preview.text.match(/name="token" value="([a-f0-9]+)"/)[1];
+  await agent.post('/admin/import/confirmer').type('form').send({ _csrf: csrf, token }).expect(303);
+  const p = models.programmes.findBySlug('residence-des-tilleuls');
+  assert.equal(p.status, 'brouillon');
+  assert.equal(p.delivery, '3e trimestre 2027');
+  assert.equal(models.lots.listByProgramme(p.id).length, 3);
+  assert.equal(models.lots.listByProgramme(models.programmes.findBySlug('domaine-du-parc').id).length, 2);
+  await request(app).get('/programmes/domaine-du-parc').expect(404);
+  await agent.post('/admin/import/confirmer').type('form').send({ _csrf: csrf, token }).expect(303);
+});

@@ -6,7 +6,7 @@ const { csrfToken, verifyCsrf } = require('../lib/csrf');
 const { verifyCredentials, requireAuth } = require('../lib/auth');
 const { imageUpload, importUpload, saveImage, removeUpload } = require('../lib/uploads');
 const { validateLot, validateProgramme, str, toInt } = require('../lib/validation');
-const { parseFile, analyzeRows, applyImport } = require('../lib/importLots');
+const { parseFile, analyzeRows, applyImport, analyzeMulti, applyMulti } = require('../lib/importLots');
 const { LOT_STATUSES, LEAD_STATUSES, PROGRAMME_STATUSES, LEAD_PROJECTS } = require('../lib/constants');
 
 const IMPORT_TTL_MS = 60 * 60 * 1000;
@@ -288,6 +288,56 @@ module.exports = ({ models, config, db }) => {
     const s = analysis.summary;
     flash(req, 'success', `Import terminé : ${count} lot(s) enregistrés (${s.create} créé(s), ${s.update} mis à jour)${s.invalid ? `, ${s.invalid} ligne(s) en erreur ignorée(s)` : ''}.`);
     res.redirect(303, `/admin/programmes/${req.programme.id}/lots`);
+  });
+
+  // ---- Import « programmes + lots » (crée aussi les programmes) ----
+  router.get('/import', (req, res) => {
+    res.render('admin/import-multi', { title: 'Importer des programmes', analysis: null, token: null, error: null });
+  });
+
+  router.get('/import/modele-programmes.csv', (req, res) => {
+    const rows = [
+      ['programme', 'ville', 'code_postal', 'livraison', 'reference', 'batiment', 'etage', 'typologie', 'surface', 'exterieur', 'surface_exterieur', 'orientation', 'parking', 'prix_ttc', 'statut'],
+      ['Résidence Exemple', 'Serris', '77700', '2e trimestre 2027', 'A01', 'A', 'RDC', 'T2', '44,5', 'jardin', '62', 'S', '1', '239000', 'Disponible'],
+      ['Résidence Exemple', 'Serris', '77700', '2e trimestre 2027', 'A11', 'A', '1', 'T3', '66,2', 'balcon', '8,5', 'SO', '1', '329000', 'Réservé'],
+    ];
+    res.set('Content-Disposition', 'attachment; filename="modele-import-programmes.csv"');
+    res.type('text/csv; charset=utf-8').send(toCsv(rows));
+  });
+
+  router.post('/import', importFile, verifyCsrf, async (req, res, next) => {
+    const render = (status, extra) => res.status(status).render('admin/import-multi', { title: 'Importer des programmes', analysis: null, token: null, error: null, ...extra });
+    if (!req.file) return render(400, { error: 'Choisissez un fichier .csv ou .xlsx.' });
+    let parsed;
+    try {
+      parsed = await parseFile(req.file.buffer, req.file.originalname);
+    } catch (e) {
+      return render(400, { error: e.expose ? e.message : 'Le fichier n’a pas pu être lu. Vérifiez qu’il s’agit bien d’un CSV ou d’un fichier Excel .xlsx.' });
+    }
+    try {
+      const existing = models.programmes.listAll({ includeArchived: true }).map((p) => ({ id: p.id, slug: p.slug, references: models.lots.references(p.id) }));
+      const analysis = analyzeMulti(parsed, existing);
+      let token = null;
+      if (!analysis.fileErrors.length && analysis.programmes.some((p) => p.usable && p.analysis.summary.valid > 0)) {
+        token = crypto.randomBytes(16).toString('hex');
+        db.prepare('DELETE FROM import_batches WHERE created_at < ?').run(Date.now() - IMPORT_TTL_MS);
+        db.prepare('INSERT INTO import_batches (token, payload, created_at) VALUES (?, ?, ?)').run(token, JSON.stringify(analysis), Date.now());
+      }
+      render(200, { analysis, token, filename: req.file.originalname });
+    } catch (e) { next(e); }
+  });
+
+  router.post('/import/confirmer', verifyCsrf, (req, res) => {
+    const token = str(req.body.token, 64);
+    const row = db.prepare('SELECT * FROM import_batches WHERE token = ? AND created_at > ?').get(token, Date.now() - IMPORT_TTL_MS);
+    if (!row) {
+      flash(req, 'error', 'Cet aperçu a expiré ou a déjà été importé. Renvoyez le fichier.');
+      return res.redirect(303, '/admin/import');
+    }
+    db.prepare('DELETE FROM import_batches WHERE token = ?').run(token);
+    const { lots, created } = applyMulti(db, models, JSON.parse(row.payload));
+    flash(req, 'success', `Import terminé : ${lots} lot(s) enregistrés, ${created} programme(s) créé(s) en brouillon. Vérifiez-les puis passez-les en « Publié » pour les rendre visibles.`);
+    res.redirect(303, '/admin/programmes');
   });
 
   // ---------------- Leads ----------------

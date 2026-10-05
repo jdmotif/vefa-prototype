@@ -1,0 +1,6 @@
+programme;ville;code_postal;livraison;reference;batiment;etage;typologie;surface;exterieur;surface_exterieur;orientation;parking;prix_ttc;statut
+Résidence des Tilleuls;Serris;77700;3e trimestre 2027;A01;A;RDC;T2;44,5;jardin;62;S;1;239 000;Disponible
+Résidence des Tilleuls;Serris;77700;3e trimestre 2027;A11;A;1;T3;66,2;balcon;8,5;SO;1;329 000;Réservé
+Résidence des Tilleuls;Serris;77700;3e trimestre 2027;A21;A;2;T4;84,7;terrasse;14;E-O;2;419 000;Disponible
+Domaine du Parc;Chelles;77500;1er trimestre 2028;B01;B;RDC;T1;29,8;aucun;;N;0;169 500;Disponible
+Domaine du Parc;Chelles;77500;1er trimestre 2028;B12;B;1;T2;43,1;balcon;6;S;1;219 000;Disponible

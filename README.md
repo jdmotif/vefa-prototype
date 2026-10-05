@@ -65,7 +65,7 @@ Toutes les variables sont décrites dans [`.env.example`](.env.example). Les pri
 - Tableau de bord : lots par statut et par programme, leads reçus par semaine, dernières demandes.
 - Programmes : création, modification, publication / brouillon, archivage, visuel principal et galerie.
 - Lots : ajout, modification, plan du lot, suppression, **changement de statut directement dans la liste**.
-- Import CSV / Excel avec aperçu et rapport d'erreurs ligne par ligne.
+- Import CSV / Excel avec aperçu et rapport d'erreurs ligne par ligne : soit les lots d'un programme existant, soit **plusieurs programmes d'un coup** (les programmes inconnus sont créés en brouillon).
 - Leads : liste filtrable, changement de statut dans la liste (Nouveau, Contacté, RDV, Perdu, Vendu), notes internes, export CSV (ouvrable dans Excel).
 
 ## 4. Format du fichier d'import des lots
@@ -89,6 +89,20 @@ Fichier **.csv** (séparateur `;` ou `,`, encodage UTF-8 ou Windows-1252) ou **.
 Les en-têtes ne tiennent compte ni des majuscules, ni des accents, ni des espaces. Les colonnes inconnues sont ignorées et signalées.
 
 **Règles d'import** : un lot dont la référence existe déjà dans le programme est **mis à jour**, les autres sont **créés**. Une colonne absente du fichier ne modifie pas les lots existants (le plan déjà envoyé est conservé). Rien n'est écrit avant d'avoir cliqué sur « Valider l'import » ; les lignes en erreur sont ignorées et listées avec leur numéro de ligne.
+
+### Créer des programmes par import (Programmes > Importer des programmes)
+
+Même fichier que ci-dessus, avec en plus ces colonnes sur **chaque ligne** (une ligne = un lot) :
+
+| Colonne | Obligatoire | Exemple |
+| --- | --- | --- |
+| `programme` | oui | Résidence des Tilleuls |
+| `ville` | oui | Serris |
+| `code_postal` | | 77700 |
+| `adresse` | | Quartier de la gare |
+| `livraison` | | 3e trimestre 2027 |
+
+Les lots sont regroupés par nom de programme. Un programme inconnu est **créé en brouillon** (invisible sur le site) ; un programme existant (même nom) reçoit les lots. Description, atouts et visuels se complètent ensuite dans la fiche du programme, puis on le passe en « Publié ». Exemple : [`exemples/programmes-et-lots.csv`](exemples/programmes-et-lots.csv).
 
 ## 5. Mise en ligne sur un sous-domaine
 

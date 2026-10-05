@@ -129,3 +129,5 @@ code { background: var(--c-bg-alt); padding: .1em .35em; border-radius: 4px; fon
 .login-card { width: 100%; max-width: 420px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 2rem 1.5rem; }
 .login-card__logo { width: 240px; height: auto; margin: 0 auto 1.5rem; }
 .login-card h1 { text-align: center; font-size: 1.3rem; }
+.import-block { border-top: 1px solid var(--c-line); padding-top: 1rem; margin-top: 1.25rem; }
+.import-block h3 { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; }

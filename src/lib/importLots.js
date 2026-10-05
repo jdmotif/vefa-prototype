@@ -7,7 +7,7 @@
  */
 const { parse } = require('csv-parse/sync');
 const ExcelJS = require('exceljs');
-const { validateLot, normalizeKey } = require('./validation');
+const { validateLot, validateProgramme, normalizeKey, slugify, str } = require('./validation');
 
 // En-têtes acceptés (insensibles à la casse, aux accents, espaces et ponctuation).
 const COLUMN_ALIASES = {
@@ -126,7 +126,7 @@ function mapHeaders(headers) {
  * Valide toutes les lignes. existingRefs : références déjà présentes dans le programme.
  * Les numéros de ligne correspondent à ceux du tableur (la ligne 1 est l'en-tête).
  */
-function analyzeRows({ headers, rows }, existingRefs = []) {
+function analyzeRows({ headers, rows }, existingRefs = [], lineNumbers = null) {
   const { mapping, missing, unknown } = mapHeaders(headers);
   const result = { fileErrors: [], unknownColumns: unknown, rows: [], summary: { total: 0, valid: 0, invalid: 0, create: 0, update: 0 } };
   if (!headers.length) {
@@ -146,7 +146,7 @@ function analyzeRows({ headers, rows }, existingRefs = []) {
   const seen = new Map();
 
   rows.forEach((cells, i) => {
-    const line = i + 2;
+    const line = lineNumbers ? lineNumbers[i] : i + 2;
     const raw = {};
     for (const [field, idx] of Object.entries(mapping)) raw[field] = cells[idx] ?? '';
     const { value, errors } = validateLot(raw);
@@ -202,4 +202,111 @@ function applyImport(db, programmeId, analysis) {
   return run(analysis.rows);
 }
 
-module.exports = { parseFile, analyzeRows, applyImport, mapHeaders, COLUMN_ALIASES, MAX_ROWS };
+// ---------------------------------------------------------------------------
+// Import « programmes + lots » : un seul fichier, une ligne par lot, avec le programme sur chaque ligne.
+// Les programmes inconnus sont créés en brouillon ; les programmes existants (même nom) reçoivent les lots.
+// ---------------------------------------------------------------------------
+const PROGRAMME_ALIASES = {
+  name: ['programme', 'nomprogramme', 'nomduprogramme', 'residence'],
+  city: ['ville', 'commune'],
+  postal_code: ['codepostal', 'cp'],
+  address: ['adresse'],
+  delivery: ['livraison', 'livraisonprevue'],
+};
+
+function analyzeMulti({ headers, rows }, existingProgrammes = []) {
+  const result = { fileErrors: [], unknownColumns: [], programmes: [], summary: { programmes: 0, newProgrammes: 0, total: 0, valid: 0, invalid: 0 } };
+  if (!headers.length) { result.fileErrors.push('Le fichier est vide.'); return result; }
+
+  const pcols = {};
+  headers.forEach((h, idx) => {
+    const key = normalizeKey(h);
+    const field = Object.keys(PROGRAMME_ALIASES).find((f) => PROGRAMME_ALIASES[f].includes(key));
+    if (field && pcols[field] === undefined) pcols[field] = idx;
+  });
+  const missingP = ['name', 'city'].filter((f) => pcols[f] === undefined).map((f) => (f === 'name' ? 'programme' : 'ville'));
+  if (missingP.length) {
+    result.fileErrors.push(`Colonnes obligatoires manquantes : ${missingP.join(', ')}. Chaque ligne doit indiquer son programme et sa ville.`);
+    return result;
+  }
+  // Colonnes de lots : on retire celles du programme avant de réutiliser l'analyse des lots.
+  const skip = new Set(Object.values(pcols));
+  const lotIdx = headers.map((_, i) => i).filter((i) => !skip.has(i));
+  const lotHeaders = lotIdx.map((i) => headers[i]);
+  const headerCheck = mapHeaders(lotHeaders);
+  if (headerCheck.missing.length) {
+    result.fileErrors.push(`Colonnes obligatoires manquantes : ${headerCheck.missing.join(', ')}. Vérifiez la première ligne du fichier.`);
+    return result;
+  }
+  result.unknownColumns = headerCheck.unknown;
+  if (rows.length > MAX_ROWS) {
+    result.fileErrors.push(`Le fichier contient ${rows.length} lignes : la limite est de ${MAX_ROWS} lots par import.`);
+    return result;
+  }
+
+  const bySlug = new Map(existingProgrammes.map((p) => [p.slug, p]));
+  const groups = new Map();
+  rows.forEach((cells, i) => {
+    const name = str(cells[pcols.name], 120);
+    const key = slugify(name) || `__vide_${i}`;
+    if (!groups.has(key)) {
+      const info = { name, city: str(cells[pcols.city], 80) };
+      for (const f of ['postal_code', 'address', 'delivery']) info[f] = pcols[f] === undefined ? '' : str(cells[pcols[f]], 200);
+      groups.set(key, { key, info, rows: [], lines: [], cityConflicts: [] });
+    }
+    const g = groups.get(key);
+    const city = str(cells[pcols.city], 80);
+    if (city && g.info.city && city.toLowerCase() !== g.info.city.toLowerCase()) g.cityConflicts.push(i + 2);
+    if (!g.info.city && city) g.info.city = city;
+    g.rows.push(lotIdx.map((c) => cells[c] ?? ''));
+    g.lines.push(i + 2);
+  });
+
+  for (const g of groups.values()) {
+    const existing = bySlug.get(g.key);
+    const { value, errors } = validateProgramme({ ...g.info, status: 'brouillon' });
+    const analysis = analyzeRows({ headers: lotHeaders, rows: g.rows }, existing ? existing.references : [], g.lines);
+    const programmeErrors = g.key.startsWith('__vide_') ? ['Nom de programme manquant.'] : (existing ? [] : errors);
+    for (const line of g.cityConflicts) {
+      for (const r of analysis.rows) if (r.line === line) r.errors.push(`Ville différente de celle des autres lots de « ${g.info.name} » (${g.info.city}).`);
+    }
+    // recalcul des totaux après les erreurs de ville
+    analysis.summary = { total: 0, valid: 0, invalid: 0, create: 0, update: 0 };
+    for (const r of analysis.rows) {
+      analysis.summary.total += 1;
+      if (r.errors.length) analysis.summary.invalid += 1;
+      else { analysis.summary.valid += 1; analysis.summary[r.action] += 1; }
+    }
+    const usable = !programmeErrors.length;
+    result.programmes.push({ key: g.key, value, isNew: !existing, existingId: existing ? existing.id : null, errors: programmeErrors, analysis, usable });
+    result.summary.programmes += 1;
+    if (!existing) result.summary.newProgrammes += 1;
+    result.summary.total += analysis.summary.total;
+    result.summary.valid += usable ? analysis.summary.valid : 0;
+    result.summary.invalid += analysis.summary.invalid + (usable ? 0 : analysis.summary.valid);
+  }
+  return result;
+}
+
+/** Crée les programmes inconnus (en brouillon) puis importe les lots valides. */
+function applyMulti(db, models, multi) {
+  const run = db.transaction(() => {
+    let lots = 0;
+    let created = 0;
+    for (const p of multi.programmes) {
+      if (!p.usable || !p.analysis.summary.valid) continue;
+      let id = p.existingId;
+      if (!id) {
+        let slug = p.value.slug;
+        if (models.programmes.slugExists(slug)) slug = `${slug}-${Date.now().toString(36)}`;
+        id = models.programmes.create({ ...p.value, slug });
+        created += 1;
+      }
+      lots += applyImport(db, id, p.analysis);
+    }
+    return { lots, created };
+  });
+  return run();
+}
+
+module.exports = { parseFile, analyzeRows, applyImport, analyzeMulti, applyMulti, mapHeaders, COLUMN_ALIASES, MAX_ROWS };

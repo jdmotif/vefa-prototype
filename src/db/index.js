@@ -17,6 +17,7 @@ function cleanArgs(args) {
 
 /** Petite enveloppe qui donne une API simple : prepare().get/all/run, exec, transaction, close. */
 function wrap(raw) {
+  let depth = 0; // transactions imbriquées : seule la plus externe valide ou annule
   return {
     exec: (sql) => raw.exec(sql),
     close: () => raw.close(),
@@ -30,7 +31,9 @@ function wrap(raw) {
     },
     transaction(fn) {
       return (...args) => {
+        if (depth > 0) return fn(...args);
         raw.exec('BEGIN');
+        depth += 1;
         try {
           const result = fn(...args);
           raw.exec('COMMIT');
@@ -38,6 +41,8 @@ function wrap(raw) {
         } catch (err) {
           raw.exec('ROLLBACK');
           throw err;
+        } finally {
+          depth -= 1;
         }
       };
     },

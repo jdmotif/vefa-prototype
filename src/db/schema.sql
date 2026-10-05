@@ -85,3 +85,9 @@ CREATE TABLE IF NOT EXISTS import_previews (
   payload      TEXT NOT NULL,
   created_at   INTEGER NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS import_batches (
+  token      TEXT PRIMARY KEY,
+  payload    TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);

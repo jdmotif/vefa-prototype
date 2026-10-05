@@ -1,0 +1,94 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/programmes">Programmes</a></li><li aria-current="page">Import de programmes</li></ol></nav>
+<h1>Importer des programmes et leurs lots</h1>
+
+<% if (error) { %><div class="alert alert--error" role="alert"><p><%= error %></p></div><% } %>
+
+<% if (!analysis) { %>
+<div class="admin-grid">
+  <form class="panel form" method="post" action="/admin/import" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>1. Choisir le fichier</h2>
+    <div class="field">
+      <label for="i-file">Fichier CSV ou Excel (.xlsx), 2 Mo maximum</label>
+      <input id="i-file" name="fichier" type="file" required accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    </div>
+    <p class="field__hint">Rien n’est enregistré à cette étape : vous verrez d’abord un aperçu. Les programmes créés sont en <strong>brouillon</strong> (invisibles sur le site) jusqu’à leur publication.</p>
+    <button class="btn btn--primary" type="submit">Voir l’aperçu</button>
+  </form>
+  <div class="panel">
+    <h2>Format attendu</h2>
+    <p>Une ligne par lot, avec le programme indiqué sur chaque ligne. Les lots d’un même programme sont regroupés par nom. Un programme qui n’existe pas est <strong>créé</strong> ; s’il existe déjà (même nom), les lots lui sont ajoutés ou mis à jour.</p>
+    <table class="data-table data-table--compact">
+      <thead><tr><th scope="col">Colonne du programme</th><th scope="col">Exemple</th></tr></thead>
+      <tbody>
+        <tr><td><code>programme</code> *</td><td>Résidence Exemple</td></tr>
+        <tr><td><code>ville</code> *</td><td>Serris</td></tr>
+        <tr><td><code>code_postal</code></td><td>77700</td></tr>
+        <tr><td><code>adresse</code></td><td>Quartier de la gare</td></tr>
+        <tr><td><code>livraison</code></td><td>2e trimestre 2027</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">Suivies des colonnes de lots habituelles (<code>reference</code>, <code>typologie</code>, <code>surface</code>, <code>prix_ttc</code>…), décrites dans le README. Description, atouts et visuels se complètent ensuite dans la fiche du programme.</p>
+    <a class="btn btn--small btn--ghost" href="/admin/import/modele-programmes.csv">Télécharger un modèle CSV</a>
+  </div>
+</div>
+<% } else { %>
+<div class="panel">
+  <h2>2. Vérifier l’aperçu <span class="muted small">(<%= filename %>)</span></h2>
+  <% if (analysis.fileErrors.length) { %>
+    <div class="alert alert--error" role="alert"><% analysis.fileErrors.forEach(function (e) { %><p><%= e %></p><% }) %></div>
+  <% } else { var s = analysis.summary; %>
+    <ul class="kpis kpis--small">
+      <li class="kpi"><span class="kpi__label">Programmes dans le fichier</span><span class="kpi__value"><%= s.programmes %></span></li>
+      <li class="kpi kpi--accent"><span class="kpi__label">Programmes à créer</span><span class="kpi__value"><%= s.newProgrammes %></span></li>
+      <li class="kpi"><span class="kpi__label">Lots valides</span><span class="kpi__value"><%= s.valid %></span></li>
+      <li class="kpi <%= s.invalid ? 'kpi--error' : 'kpi--muted' %>"><span class="kpi__label">Lots en erreur</span><span class="kpi__value"><%= s.invalid %></span></li>
+    </ul>
+    <% if (analysis.unknownColumns.length) { %><p class="alert alert--info">Colonnes ignorées (non reconnues) : <%= analysis.unknownColumns.join(', ') %>.</p><% } %>
+    <% analysis.programmes.forEach(function (p) { var a = p.analysis; %>
+    <section class="import-block">
+      <h3><%= p.value.name || '(sans nom)' %>
+        <span class="tag <%= p.isNew ? 'tag--create' : 'tag--update' %>"><%= p.isNew ? 'Nouveau programme' : 'Programme existant' %></span>
+        <span class="muted small"><%= p.value.city %><%= p.value.postal_code ? ' · ' + p.value.postal_code : '' %></span></h3>
+      <% if (p.errors.length) { %><div class="alert alert--error" role="alert"><% p.errors.forEach(function (e) { %><p><%= e %></p><% }) %><p>Ce programme et ses lots ne seront pas importés.</p></div><% } %>
+      <p class="muted small"><%= a.summary.total %> ligne(s) : <%= a.summary.create %> à créer, <%= a.summary.update %> à mettre à jour, <%= a.summary.invalid %> en erreur.</p>
+      <% if (a.summary.invalid) { %>
+      <ul class="error-report">
+        <% a.rows.filter(function (r) { return r.errors.length; }).forEach(function (r) { %>
+        <li><strong>Ligne <%= r.line %></strong><%= r.value.reference ? ' (' + r.value.reference + ')' : '' %> : <%= r.errors.join(' ') %></li>
+        <% }) %>
+      </ul>
+      <% } %>
+      <div class="table-wrap">
+      <table class="data-table data-table--compact">
+        <thead><tr><th scope="col">Ligne</th><th scope="col">Action</th><th scope="col">Réf.</th><th scope="col">Type</th><th scope="col" class="num">Surface</th><th scope="col" class="num">Prix</th><th scope="col">Statut</th></tr></thead>
+        <tbody>
+        <% a.rows.forEach(function (r) { var bad = r.errors.length; %>
+          <tr class="<%= bad ? 'row-error' : '' %>">
+            <td><%= r.line %></td>
+            <td><% if (bad) { %><span class="tag tag--error">Erreur</span><% } else if (r.action === 'update') { %><span class="tag tag--update">Mise à jour</span><% } else { %><span class="tag tag--create">Création</span><% } %></td>
+            <td><%= r.value.reference || r.raw.reference %></td><td><%= r.raw.typology %></td>
+            <td class="num"><%= r.raw.surface %></td><td class="num"><%= r.value.price ? fmt.price(r.value.price) : r.raw.price %></td><td><%= r.raw.status ?? '' %></td>
+          </tr>
+        <% }) %>
+        </tbody>
+      </table>
+      </div>
+    </section>
+    <% }) %>
+  <% } %>
+  <div class="form-actions">
+    <a class="btn btn--ghost" href="/admin/import">Choisir un autre fichier</a>
+    <% if (token) { %>
+    <form method="post" action="/admin/import/confirmer" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="token" value="<%= token %>">
+      <button class="btn btn--primary" type="submit">Valider l’import</button>
+    </form>
+    <% } %>
+  </div>
+  <% if (token && analysis.summary.invalid) { %><p class="small muted">Les lignes en erreur seront ignorées. Vous pouvez aussi corriger le fichier et le renvoyer.</p><% } %>
+</div>
+<% } %>
+<%- include('../partials/admin-bottom') %>
