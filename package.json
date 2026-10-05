@@ -1,0 +1,36 @@
+{
+  "name": "vefa-les-commercialisateurs",
+  "version": "0.1.0",
+  "description": "Prototype interne de commercialisation VEFA – Les Commercialisateurs",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "dev": "node --watch --disable-warning=ExperimentalWarning src/server.js",
+    "seed": "node --disable-warning=ExperimentalWarning src/scripts/seed.js",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-concurrency=1 \"test/**/*.test.js\""
+  },
+  "author": "Les Commercialisateurs",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "csv-parse": "^7.0.3",
+    "dotenv": "^18.0.5",
+    "ejs": "^7.0.1",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "express-session": "^1.19.0",
+    "helmet": "^8.3.0",
+    "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

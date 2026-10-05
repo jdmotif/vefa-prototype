@@ -1,0 +1,77 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/programmes">Programmes</a></li><li aria-current="page"><%= p.id ? p.name : 'Nouveau' %></li></ol></nav>
+<div class="page-head">
+  <h1><%= p.id ? 'Modifier le programme' : 'Nouveau programme' %></h1>
+  <% if (p.id) { %><div class="page-head__actions"><a class="btn btn--ghost" href="/admin/programmes/<%= p.id %>/lots">Lots du programme</a></div><% } %>
+</div>
+<%- include('errors-box') %>
+<form method="post" action="/admin/programmes<%= p.id ? '/' + p.id : '' %>" enctype="multipart/form-data" class="form admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="panel">
+    <h2>Informations</h2>
+    <div class="form__row">
+      <div class="field"><label for="p-name">Nom du programme *</label><input id="p-name" name="name" type="text" required maxlength="120" value="<%= p.name || '' %>"></div>
+      <div class="field"><label for="p-slug">Adresse web (slug)</label><input id="p-slug" name="slug" type="text" maxlength="80" pattern="[a-z0-9-]*" value="<%= p.slug || '' %>" aria-describedby="h-slug"><p class="field__hint" id="h-slug">Laisser vide pour la générer depuis le nom. Ex. : villa-horizon</p></div>
+    </div>
+    <div class="form__row">
+      <div class="field"><label for="p-city">Ville *</label><input id="p-city" name="city" type="text" required maxlength="80" value="<%= p.city || '' %>"></div>
+      <div class="field"><label for="p-cp">Code postal</label><input id="p-cp" name="postal_code" type="text" inputmode="numeric" maxlength="5" value="<%= p.postal_code || '' %>"></div>
+    </div>
+    <div class="field"><label for="p-address">Adresse</label><input id="p-address" name="address" type="text" maxlength="200" value="<%= p.address || '' %>"></div>
+    <div class="field"><label for="p-tagline">Accroche</label><input id="p-tagline" name="tagline" type="text" maxlength="160" value="<%= p.tagline || '' %>"></div>
+    <div class="field"><label for="p-desc">Description</label><textarea id="p-desc" name="description" rows="7" maxlength="5000" aria-describedby="h-desc"><%= p.description || '' %></textarea><p class="field__hint" id="h-desc">Une ligne vide sépare les paragraphes.</p></div>
+    <div class="form__row">
+      <div class="field"><label for="p-high">Atouts (un par ligne)</label><textarea id="p-high" name="highlights" rows="6" maxlength="2000"><%= p.highlights || '' %></textarea></div>
+      <div>
+        <div class="field"><label for="p-delivery">Livraison prévue</label><input id="p-delivery" name="delivery" type="text" maxlength="80" placeholder="ex. 2e trimestre 2027" value="<%= p.delivery || '' %>"></div>
+        <div class="field"><label for="p-status">Statut</label>
+          <select id="p-status" name="status">
+            <% Object.entries(C.PROGRAMME_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= p.status === k ? 'selected' : '' %>><%= v %></option><% }) %>
+          </select>
+          <p class="field__hint">Seuls les programmes « Publié » sont visibles sur le site.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="galerie">
+    <h2>Visuels</h2>
+    <p class="field__hint">Formats acceptés : JPEG, PNG, WebP. <%= Math.round(config.maxUploadBytes / 1048576) %> Mo maximum par image. Format conseillé : 1600 × 900 px.</p>
+    <div class="form__row">
+      <div class="field">
+        <label for="p-hero">Visuel principal</label>
+        <% if (p.hero_image) { %><img class="thumb" src="<%= p.hero_image %>" alt="Visuel principal actuel" width="1600" height="900"><% } %>
+        <input id="p-hero" name="hero_image" type="file" accept="image/jpeg,image/png,image/webp">
+      </div>
+      <div class="field">
+        <label for="p-gallery">Ajouter des photos à la galerie</label>
+        <input id="p-gallery" name="gallery" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+        <label for="p-galt">Légende des nouvelles photos</label>
+        <input id="p-galt" name="gallery_alt" type="text" maxlength="150" placeholder="ex. Vue de la façade côté jardin">
+      </div>
+    </div>
+  </div>
+  <div class="form-actions sticky-actions">
+    <a class="btn btn--ghost" href="/admin/programmes">Annuler</a>
+    <button class="btn btn--primary" type="submit">Enregistrer</button>
+  </div>
+</form>
+
+<% if (images.length) { %>
+<div class="panel">
+  <h2>Galerie actuelle</h2>
+  <ul class="thumb-grid">
+    <% images.forEach(function (img) { %>
+    <li>
+      <img src="<%= img.path %>" alt="<%= img.alt %>" loading="lazy" width="1200" height="800">
+      <p class="small muted"><%= img.alt %></p>
+      <form method="post" action="/admin/programmes/<%= p.id %>/images/<%= img.id %>/supprimer" data-confirm="Supprimer cette image ?">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--small btn--danger" type="submit">Supprimer</button>
+      </form>
+    </li>
+    <% }) %>
+  </ul>
+</div>
+<% } %>
+<%- include('../partials/admin-bottom') %>

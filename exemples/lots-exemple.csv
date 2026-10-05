@@ -1,0 +1,7 @@
+reference;batiment;etage;typologie;surface;exterieur;surface_exterieur;orientation;parking;prix_ttc;statut
+D01;D;RDC;T2;44,5;jardin;62;S;1;239 000;Disponible
+D02;D;0;T3;66,2;jardin;85,5;SO;1;329 000;Disponible
+D11;D;1;T1;29,8;balcon;6;E;0;169 500;Réservé
+D12;D;1;T3;68;balcon;9,2;S;1;345 000;Disponible
+D21;D;2;T4;84,7;balcon;10;E-O;1;412 000;Vendu
+D31;D;3;T5;101,3;terrasse;28,4;S;2;539 000;Disponible

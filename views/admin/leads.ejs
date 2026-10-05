@@ -1,0 +1,20 @@
+<%- include('../partials/admin-top') %>
+<div class="page-head">
+  <h1>Demandes (leads)</h1>
+  <a class="btn btn--ghost" href="/admin/leads/export.csv<%= qs ? '?' + qs : '' %>">Exporter en CSV</a>
+</div>
+<form class="panel filters-inline" method="get" action="/admin/leads">
+  <div class="field"><label for="lf-status">Statut</label>
+    <select id="lf-status" name="statut"><option value="">Tous</option>
+      <% Object.entries(C.LEAD_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= filters.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select></div>
+  <div class="field"><label for="lf-prog">Programme</label>
+    <select id="lf-prog" name="programme"><option value="">Tous</option>
+      <% programmes.forEach(function (p) { %><option value="<%= p.id %>" <%= filters.programmeId === p.id ? 'selected' : '' %>><%= p.name %></option><% }) %></select></div>
+  <button class="btn btn--primary" type="submit">Filtrer</button>
+  <% if (qs) { %><a class="link" href="/admin/leads">Réinitialiser</a><% } %>
+</form>
+<p class="muted"><%= leads.length %> demande(s). Le statut se change directement dans la liste.</p>
+<div class="panel panel--flush">
+<%- include('leads-table', { leads: leads, compact: false }) %>
+</div>
+<%- include('../partials/admin-bottom') %>

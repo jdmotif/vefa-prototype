@@ -1,0 +1,31 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/leads">Leads</a></li><li aria-current="page"><%= lead.name %></li></ol></nav>
+<div class="page-head"><h1><%= lead.name %></h1><span class="lead-status lead-status--<%= lead.status %>"><%= fmt.leadStatus(lead.status) %></span></div>
+<div class="admin-grid">
+  <section class="panel">
+    <h2>Coordonnées et projet</h2>
+    <dl class="spec-list">
+      <div><dt>Reçue le</dt><dd><%= fmt.dateTime(lead.created_at) %></dd></div>
+      <div><dt>E-mail</dt><dd><a href="mailto:<%= lead.email %>"><%= lead.email %></a></dd></div>
+      <div><dt>Téléphone</dt><dd><a href="tel:<%= lead.phone.replace(/[^+\d]/g, '') %>"><%= lead.phone %></a></dd></div>
+      <div><dt>Programme</dt><dd><%= lead.programme_name || '—' %></dd></div>
+      <div><dt>Lot</dt><dd><%= lead.lot_reference || 'Demande générale' %></dd></div>
+      <div><dt>Projet</dt><dd><%= fmt.leadProject(lead.project) %></dd></div>
+      <div><dt>Budget</dt><dd><%= lead.budget ? fmt.price(lead.budget) : '—' %></dd></div>
+    </dl>
+    <h3>Message</h3>
+    <p class="message-box"><%= lead.message || 'Aucun message.' %></p>
+    <details class="small muted"><summary>Preuve du consentement</summary><p>Donné le <%= fmt.dateTime(lead.consent_at) %> : « <%= lead.consent_text %> »</p></details>
+  </section>
+  <section class="panel">
+    <h2>Suivi</h2>
+    <form method="post" action="/admin/leads/<%= lead.id %>" class="form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field"><label for="ld-status">Statut</label>
+        <select id="ld-status" name="status"><% Object.entries(C.LEAD_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= lead.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select></div>
+      <div class="field"><label for="ld-notes">Notes internes</label><textarea id="ld-notes" name="notes" rows="8" maxlength="5000"><%= lead.notes %></textarea></div>
+      <button class="btn btn--primary" type="submit">Enregistrer</button>
+    </form>
+  </section>
+</div>
+<%- include('../partials/admin-bottom') %>

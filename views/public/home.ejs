@@ -1,0 +1,68 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="hero-band">
+  <div class="container">
+    <p class="eyebrow">Immobilier neuf en Île-de-France</p>
+    <h1 class="hero-band__title">Trouvez le logement neuf qui vous ressemble</h1>
+    <p class="hero-band__lead">Appartements et maisons en VEFA, sélectionnés par nos conseillers, pour habiter ou investir.</p>
+
+    <form class="search-bar" method="get" action="/#programmes" role="search" aria-label="Rechercher un programme">
+      <div class="field">
+        <label for="f-ville">Ville</label>
+        <select id="f-ville" name="ville">
+          <option value="">Toutes les villes</option>
+          <% cities.forEach(function (c) { %><option value="<%= c %>" <%= c === city ? 'selected' : '' %>><%= c %></option><% }) %>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-budget">Budget maximum</label>
+        <select id="f-budget" name="budget">
+          <option value="">Tous budgets</option>
+          <% budgetChoices.forEach(function (b) { %><option value="<%= b %>" <%= b === budgetMax ? 'selected' : '' %>><%= fmt.price(b) %></option><% }) %>
+        </select>
+      </div>
+      <button class="btn btn--primary btn--lg" type="submit">Rechercher</button>
+    </form>
+  </div>
+</section>
+
+<section class="section" id="programmes" aria-labelledby="titre-programmes">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="titre-programmes">Nos programmes <span class="count"><%= programmes.length %></span></h2>
+      <% if (city || budgetMax) { %><a class="link" href="/#programmes">Effacer les filtres</a><% } %>
+    </div>
+
+    <% if (!programmes.length) { %>
+      <div class="empty">
+        <p><strong>Aucun programme ne correspond à votre recherche.</strong></p>
+        <p>Élargissez votre budget ou choisissez une autre ville. Nos conseillers peuvent aussi vous informer en avant-première des prochains lancements.</p>
+      </div>
+    <% } else { %>
+    <ul class="programme-grid">
+      <% programmes.forEach(function (p) { %>
+      <li class="programme-card">
+        <a class="programme-card__link" href="/programmes/<%= p.slug %>">
+          <div class="programme-card__media">
+            <% if (p.hero_image) { %><img src="<%= p.hero_image %>" alt="" loading="lazy" width="1600" height="900"><% } else { %><div class="placeholder-visual" aria-hidden="true"></div><% } %>
+            <% if (p.delivery) { %><span class="chip chip--light">Livraison <%= p.delivery %></span><% } %>
+          </div>
+          <div class="programme-card__body">
+            <p class="programme-card__city"><%= p.city %><% if (p.postal_code) { %> (<%= p.postal_code.slice(0,2) %>)<% } %></p>
+            <h3 class="programme-card__name"><%= p.name %></h3>
+            <% if (p.typologies) { %><p class="programme-card__typos"><%= p.typologies.split(',').join(' · ') %></p><% } %>
+            <div class="programme-card__meta">
+              <p class="programme-card__price">
+                <% if (p.price_from) { %><span class="muted">À partir de</span> <strong><%= fmt.price(p.price_from) %></strong><% } else { %><strong>Bientôt disponible</strong><% } %>
+              </p>
+              <p class="pill <%= p.available_count ? 'pill--ok' : 'pill--muted' %>"><%= p.available_count %> lot<%= p.available_count > 1 ? 's' : '' %> disponible<%= p.available_count > 1 ? 's' : '' %></p>
+            </div>
+          </div>
+        </a>
+      </li>
+      <% }) %>
+    </ul>
+    <% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

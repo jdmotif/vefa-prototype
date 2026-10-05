@@ -1,0 +1,95 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/programmes">Programmes</a></li><li><a href="/admin/programmes/<%= p.id %>/lots"><%= p.name %></a></li><li aria-current="page">Import</li></ol></nav>
+<h1>Importer des lots – <%= p.name %></h1>
+
+<% if (error) { %><div class="alert alert--error" role="alert"><p><%= error %></p></div><% } %>
+
+<% if (!analysis) { %>
+<div class="admin-grid">
+  <form class="panel form" method="post" action="/admin/programmes/<%= p.id %>/import" enctype="multipart/form-data">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <h2>1. Choisir le fichier</h2>
+    <div class="field">
+      <label for="i-file">Fichier CSV ou Excel (.xlsx), 2 Mo maximum</label>
+      <input id="i-file" name="fichier" type="file" required accept=".csv,.txt,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+    </div>
+    <p class="field__hint">Rien n’est enregistré à cette étape : vous verrez d’abord un aperçu.</p>
+    <button class="btn btn--primary" type="submit">Voir l’aperçu</button>
+  </form>
+  <div class="panel">
+    <h2>Format attendu</h2>
+    <p>Première ligne = en-têtes. Séparateur « ; » ou « , ». Les lots dont la référence existe déjà sont <strong>mis à jour</strong>, les autres sont <strong>créés</strong>.</p>
+    <table class="data-table data-table--compact">
+      <thead><tr><th scope="col">Colonne</th><th scope="col">Exemple</th></tr></thead>
+      <tbody>
+        <tr><td><code>reference</code> *</td><td>A11</td></tr>
+        <tr><td><code>batiment</code></td><td>A</td></tr>
+        <tr><td><code>etage</code></td><td>1, RDC</td></tr>
+        <tr><td><code>typologie</code> *</td><td>T1 à T5, Maison</td></tr>
+        <tr><td><code>surface</code> *</td><td>64,5</td></tr>
+        <tr><td><code>exterieur</code></td><td>balcon, terrasse, jardin, aucun</td></tr>
+        <tr><td><code>surface_exterieur</code></td><td>8,2</td></tr>
+        <tr><td><code>orientation</code></td><td>S, SO, E-O</td></tr>
+        <tr><td><code>parking</code></td><td>0, 1, 2, oui, non</td></tr>
+        <tr><td><code>prix_ttc</code> *</td><td>289 000</td></tr>
+        <tr><td><code>statut</code></td><td>Disponible, Réservé, Vendu</td></tr>
+      </tbody>
+    </table>
+    <p class="small muted">* obligatoire. Voir le README pour la liste complète des en-têtes acceptés.</p>
+    <a class="btn btn--small btn--ghost" href="/admin/import/modele.csv">Télécharger un modèle CSV</a>
+  </div>
+</div>
+<% } else { %>
+<div class="panel">
+  <h2>2. Vérifier l’aperçu <span class="muted small">(<%= filename %>)</span></h2>
+  <% if (analysis.fileErrors.length) { %>
+    <div class="alert alert--error" role="alert"><% analysis.fileErrors.forEach(function (e) { %><p><%= e %></p><% }) %></div>
+  <% } else { var s = analysis.summary; %>
+    <ul class="kpis kpis--small">
+      <li class="kpi"><span class="kpi__label">Lignes lues</span><span class="kpi__value"><%= s.total %></span></li>
+      <li class="kpi"><span class="kpi__label">À créer</span><span class="kpi__value"><%= s.create %></span></li>
+      <li class="kpi kpi--accent"><span class="kpi__label">À mettre à jour</span><span class="kpi__value"><%= s.update %></span></li>
+      <li class="kpi <%= s.invalid ? 'kpi--error' : 'kpi--muted' %>"><span class="kpi__label">En erreur</span><span class="kpi__value"><%= s.invalid %></span></li>
+    </ul>
+    <% if (analysis.unknownColumns.length) { %><p class="alert alert--info">Colonnes ignorées (non reconnues) : <%= analysis.unknownColumns.join(', ') %>.</p><% } %>
+    <% if (s.invalid) { %>
+    <h3>Rapport d’erreurs</h3>
+    <ul class="error-report">
+      <% analysis.rows.filter(function (r) { return r.errors.length; }).forEach(function (r) { %>
+      <li><strong>Ligne <%= r.line %></strong><%= r.value.reference ? ' (' + r.value.reference + ')' : '' %> : <%= r.errors.join(' ') %></li>
+      <% }) %>
+    </ul>
+    <% } %>
+    <div class="table-wrap">
+    <table class="data-table data-table--compact">
+      <thead><tr><th scope="col">Ligne</th><th scope="col">Action</th><th scope="col">Réf.</th><th scope="col">Bât.</th><th scope="col">Étage</th><th scope="col">Type</th><th scope="col" class="num">Surface</th><th scope="col">Extérieur</th><th scope="col">Orient.</th><th scope="col">Parking</th><th scope="col" class="num">Prix</th><th scope="col">Statut</th></tr></thead>
+      <tbody>
+      <% analysis.rows.forEach(function (r) { var v = r.value; var bad = r.errors.length; %>
+        <tr class="<%= bad ? 'row-error' : '' %>">
+          <td><%= r.line %></td>
+          <td><% if (bad) { %><span class="tag tag--error">Erreur</span><% } else if (r.action === 'update') { %><span class="tag tag--update">Mise à jour</span><% } else { %><span class="tag tag--create">Création</span><% } %></td>
+          <td><%= v.reference || r.raw.reference %></td><td><%= r.raw.building ?? '' %></td><td><%= r.raw.floor ?? '' %></td><td><%= r.raw.typology %></td>
+          <td class="num"><%= r.raw.surface %></td><td><%= [r.raw.outdoor_type, r.raw.outdoor_surface].filter(Boolean).join(' ') %></td><td><%= r.raw.orientation ?? '' %></td>
+          <td><%= r.raw.parking ?? '' %></td><td class="num"><%= v.price ? fmt.price(v.price) : r.raw.price %></td><td><%= r.raw.status ?? '' %></td>
+        </tr>
+      <% }) %>
+      </tbody>
+    </table>
+    </div>
+  <% } %>
+  <div class="form-actions">
+    <a class="btn btn--ghost" href="/admin/programmes/<%= p.id %>/import">Choisir un autre fichier</a>
+    <% if (token) { %>
+    <form method="post" action="/admin/programmes/<%= p.id %>/import/confirmer" class="inline-form">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="token" value="<%= token %>">
+      <button class="btn btn--primary" type="submit">
+        <% var nv = analysis.summary.valid; %><%= analysis.summary.invalid ? (nv > 1 ? 'Importer les ' + nv + ' lignes valides' : 'Importer la ligne valide') : 'Valider l’import de ' + nv + ' lot' + (nv > 1 ? 's' : '') %>
+      </button>
+    </form>
+    <% } %>
+  </div>
+  <% if (token && analysis.summary.invalid) { %><p class="small muted">Les lignes en erreur seront ignorées. Vous pouvez aussi corriger le fichier et le renvoyer.</p><% } %>
+</div>
+<% } %>
+<%- include('../partials/admin-bottom') %>

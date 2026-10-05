@@ -1,0 +1,94 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<nav class="breadcrumb container" aria-label="Fil d’Ariane">
+  <ol><li><a href="/">Programmes</a></li><li><a href="/programmes/<%= p.slug %>"><%= p.name %></a></li><li aria-current="page">Contact</li></ol>
+</nav>
+<section class="section section--tight">
+  <div class="container contact-layout">
+    <aside class="contact-summary">
+      <% if (p.hero_image) { %><img src="<%= p.hero_image %>" alt="" width="1600" height="900"><% } %>
+      <div class="contact-summary__body">
+        <p class="eyebrow"><%= p.city %></p>
+        <h2 class="contact-summary__title"><%= p.name %></h2>
+        <% if (lot) { %>
+          <p class="contact-summary__lot">Lot <strong><%= lot.reference %></strong> · <%= lot.typology %> · <%= fmt.surface(lot.surface) %> · <%= fmt.floor(lot.floor) %></p>
+          <p class="contact-summary__price"><%= fmt.price(lot.price) %> TTC</p>
+        <% } %>
+        <ul class="check-list">
+          <li>Réponse d’un conseiller sous 48 h ouvrées</li>
+          <li>Plans, prix et conditions de réservation</li>
+          <li>Sans engagement</li>
+        </ul>
+      </div>
+    </aside>
+
+    <div class="contact-form card-surface">
+      <h1 class="h2"><%= lot ? 'Je suis intéressé par ce lot' : 'Être contacté par un conseiller' %></h1>
+      <p class="muted">Les champs marqués d’un <span aria-hidden="true">*</span><span class="visually-hidden">astérisque</span> sont obligatoires.</p>
+
+      <% var errCount = Object.keys(errors).length; if (errCount) { %>
+      <div class="alert alert--error" role="alert" tabindex="-1" data-autofocus>
+        <% if (errors._form) { %><p><%= errors._form %></p><% } else { %>
+        <p><strong>Merci de corriger <%= errCount > 1 ? 'les ' + errCount + ' champs signalés' : 'le champ signalé' %>.</strong></p>
+        <ul><% Object.entries(errors).forEach(function ([k, m]) { %><li><a href="#c-<%= k %>"><%= m %></a></li><% }) %></ul>
+        <% } %>
+      </div>
+      <% } %>
+
+      <form method="post" action="/programmes/<%= p.slug %>/contact" novalidate class="form">
+        <input type="hidden" name="form_token" value="<%= formToken %>">
+        <% if (lot) { %><input type="hidden" name="lot" value="<%= lot.reference %>"><% } %>
+
+        <!-- Champ piège anti-spam : masqué aux visiteurs et aux lecteurs d’écran -->
+        <div class="hp" aria-hidden="true">
+          <label for="c-site">Ne pas remplir ce champ</label>
+          <input id="c-site" type="text" name="site_web" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="field <%= errors.name ? 'has-error' : '' %>">
+          <label for="c-name">Nom et prénom <span aria-hidden="true">*</span></label>
+          <input id="c-name" name="name" type="text" autocomplete="name" required maxlength="100" value="<%= values.name || '' %>" <%- errors.name ? 'aria-invalid="true" aria-describedby="e-name"' : '' %>>
+          <% if (errors.name) { %><p class="field__error" id="e-name"><%= errors.name %></p><% } %>
+        </div>
+        <div class="form__row">
+          <div class="field <%= errors.email ? 'has-error' : '' %>">
+            <label for="c-email">E-mail <span aria-hidden="true">*</span></label>
+            <input id="c-email" name="email" type="email" autocomplete="email" required maxlength="160" value="<%= values.email || '' %>" <%- errors.email ? 'aria-invalid="true" aria-describedby="e-email"' : '' %>>
+            <% if (errors.email) { %><p class="field__error" id="e-email"><%= errors.email %></p><% } %>
+          </div>
+          <div class="field <%= errors.phone ? 'has-error' : '' %>">
+            <label for="c-phone">Téléphone <span aria-hidden="true">*</span></label>
+            <input id="c-phone" name="phone" type="tel" autocomplete="tel" required maxlength="30" value="<%= values.phone || '' %>" <%- errors.phone ? 'aria-invalid="true" aria-describedby="e-phone"' : '' %>>
+            <% if (errors.phone) { %><p class="field__error" id="e-phone"><%= errors.phone %></p><% } %>
+          </div>
+        </div>
+        <fieldset class="field <%= errors.project ? 'has-error' : '' %>" id="c-project">
+          <legend>Votre projet <span aria-hidden="true">*</span></legend>
+          <div class="segmented">
+            <label><input type="radio" name="project" value="habiter" <%= values.project === 'habiter' ? 'checked' : '' %>><span>Habiter</span></label>
+            <label><input type="radio" name="project" value="investir" <%= values.project === 'investir' ? 'checked' : '' %>><span>Investir</span></label>
+          </div>
+          <% if (errors.project) { %><p class="field__error"><%= errors.project %></p><% } %>
+        </fieldset>
+        <div class="field <%= errors.budget ? 'has-error' : '' %>">
+          <label for="c-budget">Budget envisagé (€)</label>
+          <input id="c-budget" name="budget" type="text" inputmode="numeric" maxlength="12" value="<%= values.budget || '' %>" placeholder="ex. 300 000" <%- errors.budget ? 'aria-invalid="true" aria-describedby="e-budget"' : '' %>>
+          <% if (errors.budget) { %><p class="field__error" id="e-budget"><%= errors.budget %></p><% } %>
+        </div>
+        <div class="field">
+          <label for="c-message">Message</label>
+          <textarea id="c-message" name="message" rows="4" maxlength="2000"><%= values.message || '' %></textarea>
+        </div>
+        <div class="field field--consent <%= errors.consent ? 'has-error' : '' %>">
+          <label class="checkbox" for="c-consent">
+            <input id="c-consent" type="checkbox" name="consent" value="oui" required <%= values.consent ? 'checked' : '' %> <%- errors.consent ? 'aria-invalid="true" aria-describedby="e-consent"' : '' %>>
+            <span><%= consentText %> <a href="/confidentialite" target="_blank" rel="noopener">Politique de confidentialité</a>. <span aria-hidden="true">*</span></span>
+          </label>
+          <% if (errors.consent) { %><p class="field__error" id="e-consent"><%= errors.consent %></p><% } %>
+        </div>
+        <button class="btn btn--primary btn--lg btn--block" type="submit">Envoyer ma demande</button>
+      </form>
+    </div>
+  </div>
+</section>
+<%- include('../partials/footer', { scripts: ['/js/site.js'] }) %>

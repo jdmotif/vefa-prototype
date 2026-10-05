@@ -1,0 +1,31 @@
+<% if (!leads.length) { %><p class="muted">Aucune demande pour le moment.</p><% } else { %>
+<div class="table-wrap">
+<table class="data-table">
+  <thead><tr><th scope="col">Date</th><th scope="col">Programme</th><th scope="col">Lot</th><th scope="col">Contact</th><th scope="col">Projet</th><th scope="col">Statut</th></tr></thead>
+  <tbody>
+  <% leads.forEach(function (l) { %>
+    <tr>
+      <td><%= fmt.dateTime(l.created_at) %></td>
+      <td><%= l.programme_name || '—' %></td>
+      <td><%= l.lot_reference || '—' %></td>
+      <td><a href="/admin/leads/<%= l.id %>"><strong><%= l.name %></strong></a><br><span class="muted small"><%= l.email %> · <%= l.phone %></span></td>
+      <td><%= fmt.leadProject(l.project) %><% if (l.budget) { %><br><span class="muted small"><%= fmt.price(l.budget) %></span><% } %></td>
+      <td>
+        <% if (compact) { %><span class="lead-status lead-status--<%= l.status %>"><%= fmt.leadStatus(l.status) %></span><% } else { %>
+        <form method="post" action="/admin/leads/<%= l.id %>" class="quick-status" data-quick-status>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="back" value="/admin/leads<%= typeof qs !== 'undefined' && qs ? '?' + qs : '' %>">
+          <label class="visually-hidden" for="ls-<%= l.id %>">Statut de la demande de <%= l.name %></label>
+          <select id="ls-<%= l.id %>" name="status" class="status-select status-select--<%= l.status %>">
+            <% Object.entries(C.LEAD_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= l.status === k ? 'selected' : '' %>><%= v %></option><% }) %>
+          </select>
+          <button type="submit" class="btn btn--small btn--ghost" data-no-js-only>OK</button>
+        </form>
+        <% } %>
+      </td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>

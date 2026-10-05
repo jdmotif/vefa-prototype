@@ -1,0 +1,7 @@
+reference;batiment;etage;typologie;surface;exterieur;surface_exterieur;orientation;parking;prix_ttc;statut
+E01;E;RDC;T2;44,5;jardin;62;S;1;239 000;Disponible
+E02;E;1;T7;66,2;balcon;8;SO;1;329 000;Disponible
+E03;E;deux;T3;68;balcon;9,2;S;1;345 000;Disponible
+E04;E;2;T3;;balcon;9,2;S;1;345 000;En cours
+E01;E;3;T4;84,7;balcon;10;E-O;1;412000;Vendu
+E05;E;3;T2;45;piscine;;Z;oui;12;Disponible

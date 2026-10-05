@@ -1,0 +1,49 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/programmes">Programmes</a></li><li><a href="/admin/programmes/<%= p.id %>/lots"><%= p.name %></a></li><li aria-current="page"><%= lot.id ? 'Lot ' + lot.reference : 'Nouveau lot' %></li></ol></nav>
+<h1><%= lot.id ? 'Modifier le lot ' + lot.reference : 'Nouveau lot' %></h1>
+<%- include('errors-box') %>
+<form method="post" action="<%= lot.id ? '/admin/lots/' + lot.id : '/admin/programmes/' + p.id + '/lots' %>" enctype="multipart/form-data" class="form admin-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="panel">
+    <div class="form__grid">
+      <div class="field"><label for="l-ref">Référence *</label><input id="l-ref" name="reference" type="text" required maxlength="20" value="<%= lot.reference || '' %>" placeholder="ex. A11"></div>
+      <div class="field"><label for="l-bat">Bâtiment</label><input id="l-bat" name="building" type="text" maxlength="40" value="<%= lot.building || '' %>"></div>
+      <div class="field"><label for="l-floor">Étage (0 = RDC)</label><input id="l-floor" name="floor" type="number" min="-3" max="60" step="1" value="<%= lot.floor ?? 0 %>"></div>
+      <div class="field"><label for="l-typo">Typologie *</label>
+        <select id="l-typo" name="typology" required><% C.TYPOLOGIES.forEach(function (t) { %><option <%= lot.typology === t ? 'selected' : '' %>><%= t %></option><% }) %></select></div>
+      <div class="field"><label for="l-surf">Surface habitable (m²) *</label><input id="l-surf" name="surface" type="text" inputmode="decimal" required value="<%= lot.surface ?? '' %>"></div>
+      <div class="field"><label for="l-price">Prix TTC (€) *</label><input id="l-price" name="price" type="text" inputmode="numeric" required value="<%= lot.price ?? '' %>"></div>
+      <div class="field"><label for="l-out">Extérieur</label>
+        <select id="l-out" name="outdoor_type"><% Object.entries(C.OUTDOOR_TYPES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= lot.outdoor_type === k ? 'selected' : '' %>><%= v %></option><% }) %></select></div>
+      <div class="field"><label for="l-outs">Surface extérieure (m²)</label><input id="l-outs" name="outdoor_surface" type="text" inputmode="decimal" value="<%= lot.outdoor_surface ?? '' %>"></div>
+      <div class="field"><label for="l-or">Orientation</label><input id="l-or" name="orientation" type="text" maxlength="10" list="orientations" value="<%= lot.orientation || '' %>" placeholder="ex. SO">
+        <datalist id="orientations"><% C.ORIENTATIONS.forEach(function (o) { %><option value="<%= o %>"><% }) %></datalist></div>
+      <div class="field"><label for="l-park">Places de parking</label><input id="l-park" name="parking" type="number" min="0" max="10" step="1" value="<%= lot.parking ?? 0 %>"></div>
+      <div class="field"><label for="l-status">Statut</label>
+        <select id="l-status" name="status"><% Object.entries(C.LOT_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= lot.status === k ? 'selected' : '' %>><%= v %></option><% }) %></select></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h2>Plan du lot</h2>
+    <% if (lot.plan_image) { %>
+      <img class="thumb thumb--plan" src="<%= lot.plan_image %>" alt="Plan actuel du lot <%= lot.reference %>" width="880" height="940">
+      <label class="checkbox"><input type="checkbox" name="remove_plan" value="oui"> <span>Retirer le plan actuel</span></label>
+    <% } %>
+    <div class="field">
+      <label for="l-plan"><%= lot.plan_image ? 'Remplacer le plan' : 'Ajouter un plan' %> (JPEG, PNG ou WebP, <%= Math.round(config.maxUploadBytes / 1048576) %> Mo max.)</label>
+      <input id="l-plan" name="plan_image" type="file" accept="image/jpeg,image/png,image/webp">
+    </div>
+  </div>
+  <div class="form-actions sticky-actions">
+    <a class="btn btn--ghost" href="/admin/programmes/<%= p.id %>/lots">Annuler</a>
+    <button class="btn btn--primary" type="submit">Enregistrer</button>
+  </div>
+</form>
+<% if (lot.id) { %>
+<form method="post" action="/admin/lots/<%= lot.id %>/supprimer" class="danger-zone" data-confirm="Supprimer définitivement le lot <%= lot.reference %> ?">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button class="btn btn--small btn--danger" type="submit">Supprimer ce lot</button>
+  <span class="small muted">Préférez le statut « Vendu » pour garder l’historique.</span>
+</form>
+<% } %>
+<%- include('../partials/admin-bottom') %>

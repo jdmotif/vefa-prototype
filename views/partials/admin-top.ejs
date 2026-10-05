@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title><%= title %> | Back-office Les Commercialisateurs</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin" data-csrf="<%= csrfToken %>">
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+<header class="admin-bar">
+  <a class="admin-bar__brand" href="/admin"><img src="/assets/logo.png" alt="Les Commercialisateurs" width="1218" height="306"><span>Back-office</span></a>
+  <% if (user) { %>
+  <nav class="admin-nav" aria-label="Back-office">
+    <a href="/admin" <%- adminPath === '/' ? 'aria-current="page"' : '' %>>Tableau de bord</a>
+    <a href="/admin/programmes" <%- adminPath.startsWith('/programmes') || adminPath.startsWith('/lots') ? 'aria-current="page"' : '' %>>Programmes</a>
+    <a href="/admin/leads" <%- adminPath.startsWith('/leads') ? 'aria-current="page"' : '' %>>Leads<% if (newLeads) { %> <span class="admin-nav__count" aria-label="<%= newLeads %> nouveaux"><%= newLeads %></span><% } %></a>
+    <a href="/" target="_blank" rel="noopener">Voir le site</a>
+  </nav>
+  <form method="post" action="/admin/deconnexion" class="admin-bar__logout">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <span class="admin-bar__user"><%= user.email %></span>
+    <button class="btn btn--small btn--ghost" type="submit">Déconnexion</button>
+  </form>
+  <% } %>
+</header>
+<main id="contenu" class="admin-main container" tabindex="-1">
+<% if (flash) { %><div class="alert alert--<%= flash.type === 'error' ? 'error' : 'success' %>" role="status"><p><%= flash.message %></p></div><% } %>

@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title + ' | ' : '' %>Les Commercialisateurs</title>
+  <% if (typeof metaDescription !== 'undefined' && metaDescription) { %><meta name="description" content="<%= metaDescription %>"><% } %>
+  <meta name="theme-color" content="#0B6DB7">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <%# Emplacement Google Tag Manager : chargé uniquement si GTM_ID est défini ET après consentement (voir public/js/consent.js) %>
+  <% if (gtmId) { %><script src="/js/consent.js" defer data-gtm-id="<%= gtmId %>"></script><% } %>
+</head>

@@ -1,0 +1,42 @@
+<div class="lot-detail">
+  <div class="lot-detail__head">
+    <div>
+      <p class="eyebrow"><%= p.name %> · <%= p.city %></p>
+      <h1 class="lot-detail__title" id="lot-dialog-title">Lot <%= lot.reference %> – <%= lot.typology === 'Maison' ? 'Maison' : lot.typology %> de <%= fmt.surface(lot.surface) %></h1>
+    </div>
+    <%- include('lot-badge', { lot: lot }) %>
+  </div>
+  <div class="lot-detail__body">
+    <figure class="lot-detail__plan">
+      <% if (lot.plan_image) { %>
+        <a href="<%= lot.plan_image %>" target="_blank" rel="noopener"><img src="<%= lot.plan_image %>" alt="Plan du lot <%= lot.reference %>" width="880" height="940"></a>
+        <figcaption>Plan indicatif, non contractuel. Cliquez pour l’agrandir.</figcaption>
+      <% } else { %>
+        <div class="plan-missing"><p>Plan disponible sur demande auprès de nos conseillers.</p></div>
+      <% } %>
+    </figure>
+    <div class="lot-detail__info">
+      <p class="lot-detail__price"><%= fmt.price(lot.price) %> <small>TTC</small></p>
+      <dl class="spec-list">
+        <div><dt>Typologie</dt><dd><%= lot.typology %></dd></div>
+        <div><dt>Surface habitable</dt><dd><%= fmt.surface(lot.surface) %></dd></div>
+        <div><dt>Bâtiment</dt><dd><%= lot.building || '—' %></dd></div>
+        <div><dt>Étage</dt><dd><%= fmt.floor(lot.floor) %></dd></div>
+        <div><dt>Extérieur</dt><dd><%= fmt.outdoor(lot) %></dd></div>
+        <div><dt>Orientation</dt><dd><%= lot.orientation || '—' %></dd></div>
+        <div><dt>Parking</dt><dd><%= fmt.parking(lot.parking) %></dd></div>
+        <% if (p.delivery) { %><div><dt>Livraison prévue</dt><dd><%= p.delivery %></dd></div><% } %>
+      </dl>
+      <% if (lot.status === 'disponible') { %>
+        <a class="btn btn--primary btn--lg btn--block" href="/programmes/<%= p.slug %>/contact?lot=<%= encodeURIComponent(lot.reference) %>">Je suis intéressé</a>
+      <% } else if (lot.status === 'reserve') { %>
+        <p class="notice">Ce lot fait l’objet d’une réservation. Il peut se libérer : laissez-nous vos coordonnées pour être prévenu.</p>
+        <a class="btn btn--primary btn--lg btn--block" href="/programmes/<%= p.slug %>/contact?lot=<%= encodeURIComponent(lot.reference) %>">Je suis intéressé</a>
+      <% } else { %>
+        <p class="notice notice--muted">Ce lot est vendu. Découvrez les lots encore disponibles ou demandez à être informé des prochaines opportunités.</p>
+        <a class="btn btn--ghost btn--lg btn--block" href="/programmes/<%= p.slug %>?statut=disponible&typologie=<%= lot.typology %>#lots">Voir les <%= lot.typology %> disponibles</a>
+      <% } %>
+      <p class="fine-print">Prix TTC (TVA 20 %), hors frais de notaire. Informations non contractuelles.</p>
+    </div>
+  </div>
+</div>

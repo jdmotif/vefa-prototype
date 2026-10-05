@@ -1,0 +1,57 @@
+<%- include('../partials/admin-top') %>
+<div class="page-head">
+  <h1>Tableau de bord</h1>
+  <a class="btn btn--primary" href="/admin/programmes/nouveau">+ Nouveau programme</a>
+</div>
+
+<ul class="kpis">
+  <li class="kpi"><span class="kpi__label">Lots disponibles</span><span class="kpi__value"><%= totals.disponible %></span></li>
+  <li class="kpi kpi--warn"><span class="kpi__label">Lots réservés</span><span class="kpi__value"><%= totals.reserve %></span></li>
+  <li class="kpi kpi--muted"><span class="kpi__label">Lots vendus</span><span class="kpi__value"><%= totals.vendu %></span><span class="kpi__sub"><%= fmt.price(totals.ca) %> TTC</span></li>
+  <li class="kpi kpi--accent"><span class="kpi__label">Nouveaux leads</span><span class="kpi__value"><%= leadsByStatus.nouveau || 0 %></span><a class="kpi__sub" href="/admin/leads?statut=nouveau">Traiter</a></li>
+</ul>
+
+<div class="admin-grid">
+  <section class="panel" aria-labelledby="t-lots">
+    <h2 id="t-lots">Lots par statut et par programme</h2>
+    <% if (!byProgramme.length) { %><p class="muted">Aucun programme actif.</p><% } %>
+    <ul class="stack-list">
+      <% byProgramme.forEach(function (r) { var t = r.total || 1; %>
+      <li>
+        <div class="stack-list__head">
+          <a href="/admin/programmes/<%= r.id %>/lots"><strong><%= r.name %></strong></a>
+          <span class="muted"><%= r.total %> lots<%= r.programme_status !== 'publie' ? ' · ' + fmt.programmeStatus(r.programme_status) : '' %></span>
+        </div>
+        <svg class="stack-bar" viewBox="0 0 100 10" preserveAspectRatio="none" role="img" aria-label="<%= r.disponible %> disponibles, <%= r.reserve %> réservés, <%= r.vendu %> vendus">
+          <rect x="0" y="0" height="10" width="<%= (r.disponible / t * 100).toFixed(2) %>" class="s-dispo"/>
+          <rect x="<%= (r.disponible / t * 100).toFixed(2) %>" y="0" height="10" width="<%= (r.reserve / t * 100).toFixed(2) %>" class="s-reserve"/>
+          <rect x="<%= ((r.disponible + r.reserve) / t * 100).toFixed(2) %>" y="0" height="10" width="<%= (r.vendu / t * 100).toFixed(2) %>" class="s-vendu"/>
+        </svg>
+        <p class="stack-legend"><span class="dot dot--dispo"></span><%= r.disponible %> disponibles <span class="dot dot--reserve"></span><%= r.reserve %> réservés <span class="dot dot--vendu"></span><%= r.vendu %> vendus</p>
+      </li>
+      <% }) %>
+    </ul>
+  </section>
+
+  <section class="panel" aria-labelledby="t-weeks">
+    <% var max = Math.max(1, ...weeks.map(function (w) { return w.count; })); var total = weeks.reduce(function (s, w) { return s + w.count; }, 0); %>
+    <h2 id="t-weeks">Leads reçus par semaine</h2>
+    <p class="muted"><%= total %> demandes sur les 12 dernières semaines</p>
+    <svg class="week-chart" viewBox="0 0 360 170" role="img" aria-labelledby="t-weeks">
+      <% weeks.forEach(function (w, i) { var h = Math.round(w.count / max * 120); var x = 6 + i * 29.5; %>
+        <rect x="<%= x %>" y="<%= 135 - h %>" width="22" height="<%= Math.max(h, 1) %>" rx="3" class="<%= i === weeks.length - 1 ? 'bar bar--current' : 'bar' %>"><title>Semaine du <%= w.week.split('-').reverse().join('/') %> : <%= w.count %> lead(s)</title></rect>
+        <% if (w.count) { %><text x="<%= x + 11 %>" y="<%= 130 - h %>" text-anchor="middle" class="bar-label"><%= w.count %></text><% } %>
+        <% if (i % 2 === 1 || i === weeks.length - 1) { %><text x="<%= x + 11 %>" y="155" text-anchor="middle" class="axis-label"><%= w.week.slice(8,10) %>/<%= w.week.slice(5,7) %></text><% } %>
+      <% }) %>
+      <line x1="0" y1="135.5" x2="360" y2="135.5" class="axis"/>
+    </svg>
+    <table class="visually-hidden"><caption>Leads par semaine</caption><tr><th>Semaine du</th><th>Leads</th></tr>
+      <% weeks.forEach(function (w) { %><tr><td><%= w.week %></td><td><%= w.count %></td></tr><% }) %></table>
+  </section>
+</div>
+
+<section class="panel" aria-labelledby="t-recent">
+  <div class="page-head page-head--small"><h2 id="t-recent">Dernières demandes</h2><a class="link" href="/admin/leads">Toutes les demandes</a></div>
+  <%- include('leads-table', { leads: recentLeads, compact: true }) %>
+</section>
+<%- include('../partials/admin-bottom') %>

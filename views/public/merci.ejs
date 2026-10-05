@@ -1,0 +1,11 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container container--narrow card-surface center">
+    <div class="success-mark" aria-hidden="true">✓</div>
+    <h1>Merci, votre demande est bien envoyée</h1>
+    <p>Un conseiller Les Commercialisateurs vous recontacte sous 48 h ouvrées au sujet de <strong><%= p.name %></strong>.</p>
+    <p><a class="btn btn--primary" href="/programmes/<%= p.slug %>#lots">Revenir au programme</a> <a class="btn btn--ghost" href="/">Voir tous les programmes</a></p>
+  </div>
+</section>
+<%- include('../partials/footer') %>

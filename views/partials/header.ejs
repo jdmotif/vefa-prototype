@@ -1,0 +1,14 @@
+<body class="<%= typeof bodyClass !== 'undefined' ? bodyClass : '' %>">
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="/" aria-label="Les Commercialisateurs Île-de-France – accueil">
+      <img src="/assets/logo.png" alt="Les Commercialisateurs Île-de-France" width="1218" height="306">
+    </a>
+    <nav class="site-nav" aria-label="Navigation principale">
+      <a href="/#programmes" <%- currentPath === '/' ? 'aria-current="page"' : '' %>>Nos programmes</a>
+      <a href="/confidentialite">Vos données</a>
+    </nav>
+  </div>
+</header>
+<main id="contenu" tabindex="-1">

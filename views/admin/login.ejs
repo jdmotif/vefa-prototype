@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Connexion | Back-office Les Commercialisateurs</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin admin--login">
+<main id="contenu" class="login-card">
+  <img src="/assets/logo.png" alt="Les Commercialisateurs Île-de-France" width="1218" height="306" class="login-card__logo">
+  <h1 class="h2">Connexion au back-office</h1>
+  <% if (error) { %><div class="alert alert--error" role="alert"><p><%= error %></p></div><% } %>
+  <form method="post" action="/admin/connexion" class="form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field">
+      <label for="l-email">Identifiant (e-mail)</label>
+      <input id="l-email" name="email" type="email" autocomplete="username" required value="<%= email %>">
+    </div>
+    <div class="field">
+      <label for="l-pass">Mot de passe</label>
+      <input id="l-pass" name="password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="btn btn--primary btn--lg btn--block" type="submit">Se connecter</button>
+  </form>
+  <p class="fine-print"><a href="/">← Retour au site</a></p>
+</main>
+</body>
+</html>

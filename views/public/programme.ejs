@@ -1,0 +1,209 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<nav class="breadcrumb container" aria-label="Fil d’Ariane">
+  <ol><li><a href="/">Programmes</a></li><li aria-current="page"><%= p.name %></li></ol>
+</nav>
+
+<section class="programme-hero">
+  <div class="container programme-hero__inner">
+    <div class="programme-hero__media">
+      <% if (p.hero_image) { %><img src="<%= p.hero_image %>" alt="Visuel du programme <%= p.name %>" width="1600" height="900"><% } else { %><div class="placeholder-visual" aria-hidden="true"></div><% } %>
+    </div>
+    <div class="programme-hero__panel">
+      <p class="eyebrow"><%= p.city %><% if (p.postal_code) { %> · <%= p.postal_code %><% } %></p>
+      <h1 class="programme-hero__title"><%= p.name %></h1>
+      <% if (p.tagline) { %><p class="programme-hero__tagline"><%= p.tagline %></p><% } %>
+      <dl class="key-facts">
+        <div><dt>Prix</dt><dd><%= priceFrom ? 'dès ' + fmt.price(priceFrom) : 'Nous consulter' %></dd></div>
+        <div><dt>Disponibles</dt><dd><%= availableCount %> lot<%= availableCount > 1 ? 's' : '' %></dd></div>
+        <% if (p.delivery) { %><div><dt>Livraison prévue</dt><dd><%= p.delivery %></dd></div><% } %>
+      </dl>
+      <div class="programme-hero__actions">
+        <a class="btn btn--primary btn--lg" href="#lots">Voir les lots</a>
+        <a class="btn btn--ghost btn--lg" href="/programmes/<%= p.slug %>/contact">Être rappelé</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container two-cols">
+    <div class="prose">
+      <h2>Le programme</h2>
+      <% fmt.lines(p.description).forEach(function (para) { %><p><%= para %></p><% }) %>
+      <% if (p.address) { %>
+      <h3>Adresse</h3>
+      <p class="address"><%= p.address %>, <%= p.postal_code %> <%= p.city %></p>
+      <% } %>
+    </div>
+    <% if (fmt.lines(p.highlights).length) { %>
+    <aside class="highlights" aria-labelledby="titre-atouts">
+      <h2 id="titre-atouts">Les atouts</h2>
+      <ul>
+        <% fmt.lines(p.highlights).forEach(function (h) { %><li><%= h %></li><% }) %>
+      </ul>
+    </aside>
+    <% } %>
+  </div>
+</section>
+
+<% if (images.length) { %>
+<section class="section section--tight" aria-labelledby="titre-galerie">
+  <div class="container">
+    <h2 id="titre-galerie">Galerie</h2>
+    <ul class="gallery">
+      <% images.forEach(function (img, i) { %>
+      <li><a href="<%= img.path %>" class="gallery__item" data-lightbox data-alt="<%= img.alt %>"><img src="<%= img.path %>" alt="<%= img.alt %>" loading="lazy" width="1200" height="800"></a></li>
+      <% }) %>
+    </ul>
+  </div>
+</section>
+<% } %>
+
+<section class="section section--alt" id="lots" aria-labelledby="titre-lots">
+  <div class="container">
+    <div class="section__head">
+      <h2 id="titre-lots">Choisissez votre logement</h2>
+      <p class="muted" aria-live="polite"><span data-result-count><%= lots.length %></span> lot(s) sur <%= allLots.length %></p>
+    </div>
+
+    <form class="lot-filters" method="get" action="/programmes/<%= p.slug %>#lots" data-lot-filters aria-label="Filtrer les lots">
+      <fieldset class="lot-filters__group">
+        <legend>Typologie</legend>
+        <div class="chips">
+          <% typologies.forEach(function (t) { %>
+          <label class="chip-check"><input type="checkbox" name="typologie" value="<%= t %>" <%= criteria.typologies.includes(t) ? 'checked' : '' %>><span><%= t %></span></label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <div class="lot-filters__row">
+        <div class="field field--sm">
+          <label for="f-smin">Surface min. (m²)</label>
+          <input id="f-smin" name="surface_min" type="number" inputmode="numeric" min="0" step="1" value="<%= criteria.surfaceMin ?? '' %>">
+        </div>
+        <div class="field field--sm">
+          <label for="f-smax">Surface max. (m²)</label>
+          <input id="f-smax" name="surface_max" type="number" inputmode="numeric" min="0" step="1" value="<%= criteria.surfaceMax ?? '' %>">
+        </div>
+        <div class="field field--sm">
+          <label for="f-bmax">Budget max. (€)</label>
+          <input id="f-bmax" name="budget_max" type="number" inputmode="numeric" min="0" step="5000" value="<%= criteria.budgetMax ?? '' %>">
+        </div>
+        <div class="field field--sm">
+          <label for="f-etage">Étage</label>
+          <select id="f-etage" name="etage">
+            <option value="">Tous</option>
+            <% floors.forEach(function (f) { %><option value="<%= f %>" <%= criteria.floor === f ? 'selected' : '' %>><%= fmt.floor(f) %></option><% }) %>
+          </select>
+        </div>
+        <div class="field field--sm">
+          <label for="f-tri">Trier par</label>
+          <select id="f-tri" name="tri">
+            <% [['prix-asc','Prix croissant'],['prix-desc','Prix décroissant'],['surface-asc','Surface croissante'],['surface-desc','Surface décroissante'],['etage-asc','Étage croissant'],['etage-desc','Étage décroissant']].forEach(function (o) { %>
+            <option value="<%= o[0] %>" <%= criteria.sort === o[0] ? 'selected' : '' %>><%= o[1] %></option>
+            <% }) %>
+          </select>
+        </div>
+      </div>
+      <fieldset class="lot-filters__group">
+        <legend>Statut</legend>
+        <div class="chips">
+          <% Object.entries(C.LOT_STATUSES).forEach(function ([k, label]) { %>
+          <label class="chip-check"><input type="checkbox" name="statut" value="<%= k %>" <%= criteria.statuses.includes(k) ? 'checked' : '' %>><span><%= label %></span></label>
+          <% }) %>
+        </div>
+      </fieldset>
+      <div class="lot-filters__actions">
+        <button class="btn btn--primary" type="submit" data-no-js-only>Appliquer les filtres</button>
+        <a class="link" href="/programmes/<%= p.slug %>#lots" data-reset-filters>Réinitialiser</a>
+        <div class="view-toggle" role="group" aria-label="Affichage des lots" data-view-toggle hidden>
+          <button type="button" class="view-toggle__btn" data-view="cards" aria-pressed="false">Cartes</button>
+          <button type="button" class="view-toggle__btn" data-view="table" aria-pressed="false">Tableau</button>
+        </div>
+      </div>
+    </form>
+
+    <p class="empty" data-empty <%= lots.length ? 'hidden' : '' %>>Aucun lot ne correspond à ces critères. Essayez d’élargir la surface ou le budget.</p>
+
+    <div class="lots" data-lots-root data-view="cards">
+      <div class="lot-table-wrap" data-view-panel="table">
+        <table class="lot-table">
+          <caption class="visually-hidden">Lots du programme <%= p.name %></caption>
+          <thead>
+            <tr>
+              <th scope="col">Lot</th><th scope="col">Bât.</th><th scope="col">Étage</th><th scope="col">Type</th>
+              <th scope="col" class="num">Surface</th><th scope="col">Extérieur</th><th scope="col">Orient.</th>
+              <th scope="col">Parking</th><th scope="col" class="num">Prix TTC</th><th scope="col">Statut</th><th scope="col"><span class="visually-hidden">Action</span></th>
+            </tr>
+          </thead>
+          <tbody data-lot-list="table">
+            <% ordered.forEach(function (lot) { var shown = shownIds.has(lot.id); %>
+            <tr class="lot-row is-<%= lot.status %>" data-lot-id="<%= lot.id %>" <%= shown ? '' : 'hidden' %>>
+              <th scope="row"><%= lot.reference %></th>
+              <td><%= lot.building %></td>
+              <td><%= fmt.floor(lot.floor) %></td>
+              <td><%= lot.typology %></td>
+              <td class="num"><%= fmt.surface(lot.surface) %></td>
+              <td><%= fmt.outdoor(lot) %></td>
+              <td><%= lot.orientation || '—' %></td>
+              <td><%= fmt.parking(lot.parking) %></td>
+              <td class="num price"><%= fmt.price(lot.price) %></td>
+              <td><%- include('../partials/lot-badge', { lot: lot }) %></td>
+              <td><a class="btn btn--small btn--ghost" href="/programmes/<%= p.slug %>/lots/<%= lot.reference %>" data-lot-open>Détails<span class="visually-hidden"> du lot <%= lot.reference %></span></a></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <ul class="lot-cards" data-lot-list="cards" data-view-panel="cards">
+        <% ordered.forEach(function (lot) { var shown = shownIds.has(lot.id); %>
+        <li class="lot-card is-<%= lot.status %>" data-lot-id="<%= lot.id %>" <%= shown ? '' : 'hidden' %>>
+          <div class="lot-card__head">
+            <h3 class="lot-card__ref">Lot <%= lot.reference %> <span class="lot-card__typo"><%= lot.typology %></span></h3>
+            <%- include('../partials/lot-badge', { lot: lot }) %>
+          </div>
+          <dl class="lot-card__facts">
+            <div><dt>Surface</dt><dd><%= fmt.surface(lot.surface) %></dd></div>
+            <div><dt>Étage</dt><dd><%= fmt.floor(lot.floor) %><%= lot.building ? ' · bât. ' + lot.building : '' %></dd></div>
+            <div><dt>Extérieur</dt><dd><%= fmt.outdoor(lot) %></dd></div>
+            <div><dt>Orientation</dt><dd><%= lot.orientation || '—' %></dd></div>
+            <div><dt>Parking</dt><dd><%= fmt.parking(lot.parking) %></dd></div>
+          </dl>
+          <div class="lot-card__foot">
+            <p class="lot-card__price"><%= fmt.price(lot.price) %> <small>TTC</small></p>
+            <a class="btn btn--small <%= lot.status === 'vendu' ? 'btn--ghost' : 'btn--primary' %>" href="/programmes/<%= p.slug %>/lots/<%= lot.reference %>" data-lot-open>Voir le lot<span class="visually-hidden"> <%= lot.reference %></span></a>
+          </div>
+        </li>
+        <% }) %>
+      </ul>
+    </div>
+    <p class="fine-print">Prix TTC avec TVA à 20 %, hors frais de notaire. Les prix et disponibilités sont donnés à titre indicatif et peuvent évoluer.</p>
+  </div>
+</section>
+
+<section class="section cta-band">
+  <div class="container cta-band__inner">
+    <div>
+      <h2>Un conseiller vous accompagne</h2>
+      <p>Plans détaillés, simulation de financement, frais de notaire réduits : posez-nous vos questions sur <%= p.name %>.</p>
+    </div>
+    <a class="btn btn--light btn--lg" href="/programmes/<%= p.slug %>/contact">Je souhaite être contacté</a>
+  </div>
+</section>
+
+<dialog class="modal" data-lot-dialog aria-labelledby="lot-dialog-title">
+  <div class="modal__inner">
+    <button type="button" class="modal__close" data-dialog-close aria-label="Fermer la fiche">×</button>
+    <div data-dialog-content></div>
+  </div>
+</dialog>
+<dialog class="modal modal--image" data-lightbox-dialog aria-label="Image agrandie">
+  <div class="modal__inner">
+    <button type="button" class="modal__close" data-dialog-close aria-label="Fermer l’image">×</button>
+    <img src="" alt="" data-lightbox-img>
+  </div>
+</dialog>
+
+<script type="application/json" id="lots-data"><%- lotsJson %></script>
+<%- include('../partials/footer', { scripts: ['/js/lot-filter.js', '/js/programme.js'] }) %>

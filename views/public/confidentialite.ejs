@@ -1,0 +1,20 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<section class="section">
+  <div class="container container--narrow prose card-surface">
+    <h1>Données personnelles et cookies</h1>
+    <p class="alert alert--warning"><strong>Page à compléter</strong> avant la mise en production, avec votre délégué à la protection des données ou votre conseil juridique.</p>
+    <h2>Données collectées</h2>
+    <p>Lorsque vous remplissez le formulaire de contact, nous enregistrons : nom, e-mail, téléphone, type de projet, budget, message, programme et lot concernés, ainsi que la date et le texte du consentement donné.</p>
+    <h2>Finalité et base légale</h2>
+    <p>Ces données servent uniquement à vous recontacter au sujet des programmes immobiliers commercialisés par Les Commercialisateurs. La base légale est votre consentement.</p>
+    <h2>Durée de conservation</h2>
+    <p>3 ans à compter du dernier contact, puis suppression ou anonymisation.</p>
+    <h2>Vos droits</h2>
+    <p>Vous pouvez demander l’accès, la rectification, l’effacement ou la portabilité de vos données, et retirer votre consentement à tout moment, en écrivant à : <em>[adresse e-mail du responsable de traitement à compléter]</em>. Vous pouvez également saisir la CNIL.</p>
+    <h2>Cookies</h2>
+    <p>Par défaut, ce site ne dépose <strong>aucun cookie</strong> sur votre navigateur. Si une mesure d’audience est activée, elle n’est chargée qu’après votre accord explicite, que vous pouvez retirer à tout moment.</p>
+    <% if (gtmId) { %><p><button type="button" class="btn btn--ghost" data-consent-open>Gérer mes préférences</button></p><% } %>
+  </div>
+</section>
+<%- include('../partials/footer') %>

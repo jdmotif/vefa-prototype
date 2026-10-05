@@ -1,0 +1,40 @@
+</main>
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div>
+      <img class="site-footer__logo" src="/assets/logo.png" alt="Les Commercialisateurs Île-de-France" width="1218" height="306" loading="lazy">
+      <p class="muted">Commercialisateur de programmes immobiliers neufs en Île-de-France.</p>
+    </div>
+    <div>
+      <h2 class="site-footer__title">Nous trouver</h2>
+      <p>Siège : Serris (77)<br>Accueil sur rendez-vous</p>
+    </div>
+    <div>
+      <h2 class="site-footer__title">Informations</h2>
+      <ul class="plain-list">
+        <li><a href="/mentions-legales">Mentions légales</a></li>
+        <li><a href="/confidentialite">Données personnelles et cookies</a></li>
+        <% if (gtmId) { %><li><button type="button" class="link-button" data-consent-open>Gérer mes préférences cookies</button></li><% } %>
+      </ul>
+    </div>
+  </div>
+  <div class="container site-footer__bottom">
+    <p>© <%= year %> Les Commercialisateurs. Visuels et plans non contractuels.</p>
+  </div>
+</footer>
+<% if (gtmId) { %>
+<div class="consent" id="consent-banner" role="dialog" aria-modal="false" aria-labelledby="consent-title" hidden>
+  <div class="consent__inner">
+    <h2 id="consent-title" class="consent__title">Mesure d’audience</h2>
+    <p>Avec votre accord, nous utilisons des outils de mesure d’audience pour améliorer ce site. Vous pouvez changer d’avis à tout moment. <a href="/confidentialite">En savoir plus</a></p>
+    <div class="consent__actions">
+      <button type="button" class="btn btn--ghost" data-consent="refuse">Refuser</button>
+      <button type="button" class="btn btn--primary" data-consent="accept">Accepter</button>
+    </div>
+  </div>
+</div>
+<% } %>
+<% if (typeof scripts !== 'undefined') { scripts.forEach(function (src) { %><script src="<%= src %>" defer></script>
+<% }) } %>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<%- include('../partials/admin-top') %>
+<nav class="breadcrumb" aria-label="Fil d’Ariane"><ol><li><a href="/admin/programmes">Programmes</a></li><li><a href="/admin/programmes/<%= p.id %>"><%= p.name %></a></li><li aria-current="page">Lots</li></ol></nav>
+<div class="page-head">
+  <h1>Lots – <%= p.name %></h1>
+  <div class="page-head__actions">
+    <a class="btn btn--ghost" href="/admin/programmes/<%= p.id %>/import">Importer (CSV / Excel)</a>
+    <a class="btn btn--primary" href="/admin/programmes/<%= p.id %>/lots/nouveau">+ Ajouter un lot</a>
+  </div>
+</div>
+<% var c = { disponible: 0, reserve: 0, vendu: 0 }; lots.forEach(function (l) { c[l.status]++; }); %>
+<p class="muted"><%= lots.length %> lots · <%= c.disponible %> disponibles · <%= c.reserve %> réservés · <%= c.vendu %> vendus. Le statut se change directement dans la liste.</p>
+<% if (!lots.length) { %><div class="panel"><p>Aucun lot pour l’instant. Ajoutez-les un par un ou importez un fichier.</p></div><% } else { %>
+<div class="table-wrap">
+<table class="data-table">
+  <thead><tr><th scope="col">Réf.</th><th scope="col">Bât.</th><th scope="col">Étage</th><th scope="col">Type</th><th scope="col" class="num">Surface</th><th scope="col">Extérieur</th><th scope="col">Parking</th><th scope="col" class="num">Prix TTC</th><th scope="col">Plan</th><th scope="col">Statut</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+  <tbody>
+  <% lots.forEach(function (l) { %>
+    <tr id="lot-<%= l.id %>">
+      <th scope="row"><%= l.reference %></th><td><%= l.building %></td><td><%= fmt.floor(l.floor) %></td><td><%= l.typology %></td>
+      <td class="num"><%= fmt.surface(l.surface) %></td><td><%= fmt.outdoor(l) %></td><td><%= fmt.parking(l.parking) %></td>
+      <td class="num"><strong><%= fmt.price(l.price) %></strong></td>
+      <td><%= l.plan_image ? 'Oui' : '—' %></td>
+      <td>
+        <form method="post" action="/admin/lots/<%= l.id %>/statut" class="quick-status" data-quick-status>
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <label class="visually-hidden" for="st-<%= l.id %>">Statut du lot <%= l.reference %></label>
+          <select id="st-<%= l.id %>" name="status" class="status-select status-select--<%= l.status %>">
+            <% Object.entries(C.LOT_STATUSES).forEach(function ([k, v]) { %><option value="<%= k %>" <%= l.status === k ? 'selected' : '' %>><%= v %></option><% }) %>
+          </select>
+          <button type="submit" class="btn btn--small btn--ghost" data-no-js-only>OK</button>
+        </form>
+      </td>
+      <td><a class="btn btn--small btn--ghost" href="/admin/lots/<%= l.id %>">Modifier<span class="visually-hidden"> le lot <%= l.reference %></span></a></td>
+    </tr>
+  <% }) %>
+  </tbody>
+</table>
+</div>
+<% } %>
+<%- include('../partials/admin-bottom') %>

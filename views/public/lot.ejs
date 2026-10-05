@@ -1,0 +1,12 @@
+<%- include('../partials/head') %>
+<%- include('../partials/header') %>
+<nav class="breadcrumb container" aria-label="Fil d’Ariane">
+  <ol><li><a href="/">Programmes</a></li><li><a href="/programmes/<%= p.slug %>#lots"><%= p.name %></a></li><li aria-current="page">Lot <%= lot.reference %></li></ol>
+</nav>
+<section class="section section--tight">
+  <div class="container container--narrow card-surface">
+    <%- include('../partials/lot-detail') %>
+  </div>
+  <p class="container container--narrow back-link"><a class="link" href="/programmes/<%= p.slug %>#lots">← Retour à la liste des lots</a></p>
+</section>
+<%- include('../partials/footer') %>
