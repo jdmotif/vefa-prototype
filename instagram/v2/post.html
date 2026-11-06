@@ -4,10 +4,10 @@
 *{box-sizing:border-box;margin:0}
 :root{--navy:#0A2540;--blue:#0B6DB7;--teal:#5FCFB0;--ink:#15212D;--muted:#586877}
 body{width:1080px;height:1350px;font-family:Montserrat,Arial,sans-serif;background:var(--navy);position:relative;overflow:hidden}
-.top{position:absolute;inset:0 0 auto 0;height:470px;padding:56px 64px;color:#fff}
-.logo{height:84px}
-.eyebrow{margin-top:36px;font-size:24px;font-weight:700;letter-spacing:4px;color:var(--teal)}
-h1{margin-top:16px;font-size:92px;line-height:1.02;font-weight:800;letter-spacing:-2px}
+.top{position:absolute;inset:0 0 auto 0;height:470px;padding:36px 64px;color:#fff}
+.logo{height:60px}
+.eyebrow{margin-top:26px;font-size:22px;font-weight:700;letter-spacing:4px;color:var(--teal)}
+h1{margin-top:14px;font-size:68px;line-height:1.04;font-weight:800;letter-spacing:-1.5px}
 h1 span{color:var(--teal)}
 .bar{position:absolute;top:470px;left:0;right:0;height:150px;background:#fff;padding:22px 48px;display:flex;flex-direction:column;justify-content:space-between}
 .row{display:flex;align-items:center;gap:22px;font-size:26px;font-weight:700;color:var(--ink)}
@@ -17,18 +17,20 @@ h1 span{color:var(--teal)}
 .av img{width:56px}
 .acct b{display:block;font-size:24px;color:var(--ink)}
 .acct small{font-size:19px;color:var(--muted);font-weight:500}
-.photo{position:absolute;top:620px;left:0;right:0;height:640px;overflow:hidden}
-.photo img{width:100%;height:100%;object-fit:cover;object-position:center 40%}
+.photo{position:absolute;top:620px;left:0;right:0;height:636px;overflow:hidden}
+.photo>img{position:absolute;left:-60px;top:-350px;width:1320px}
+.pop{position:absolute;left:0;right:0;top:0;height:660px;overflow:hidden;pointer-events:none;z-index:5}
+.pop img{position:absolute;left:-60px;top:270px;width:1320px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.35))}
 .nc{position:absolute;right:16px;bottom:12px;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
 .tag{position:absolute;left:40px;bottom:36px;background:var(--navy);color:#fff;padding:16px 26px;border-radius:14px;font-size:24px;font-weight:700;line-height:1.3}
 .tag span{color:var(--teal);display:block;font-size:20px}
-.foot{position:absolute;bottom:0;left:0;right:0;height:90px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;font-weight:600;letter-spacing:1px}
+.foot{position:absolute;bottom:0;left:0;right:0;height:94px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;font-weight:600;letter-spacing:1px}
 svg{width:40px;height:40px}
 </style></head><body>
 <div class="top">
 <img class="logo" src="logo-blanc.png" alt="">
 <div class="eyebrow">LES JARDINS DE L'OURCQ · MEAUX (77)</div>
-<h1>Laissez-nous vous<br>guider <span>chez vous.</span></h1>
+<h1>Laissez-nous<br>vous guider<br><span>chez vous.</span></h1>
 </div>
 <div class="bar">
 <div class="row">
@@ -41,5 +43,6 @@ svg{width:40px;height:40px}
 <div class="row"><div class="acct"><div class="av" style="background:linear-gradient(135deg,#0B6DB7,#5FCFB0);color:#fff;font-size:24px;font-weight:800;border:0">LC</div><div><b>lescommercialisateurs</b><small>Appartements neufs · Île-de-France</small></div></div><span class="sp"></span><span style="font-size:34px;letter-spacing:2px">···</span></div>
 </div>
 <div class="photo"><img src="scene.png" alt=""><div class="tag">Appartements neufs à Meaux<span>Du conseil à la remise des clés</span></div><div class="nc">Image non contractuelle</div></div>
+<div class="pop"><img src="advisor.png" alt=""></div>
 <div class="foot">www.lescommercialisateurs.com</div>
 </body></html>
