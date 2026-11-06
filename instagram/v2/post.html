@@ -1,48 +1,70 @@
 <!doctype html><html lang="fr"><head><meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap">
 <style>
 *{box-sizing:border-box;margin:0}
-:root{--navy:#0A2540;--blue:#0B6DB7;--teal:#5FCFB0;--ink:#15212D;--muted:#586877}
-body{width:1080px;height:1350px;font-family:Montserrat,Arial,sans-serif;background:var(--navy);position:relative;overflow:hidden}
-.top{position:absolute;inset:0 0 auto 0;height:470px;padding:36px 64px;color:#fff}
-.logo{height:60px}
-.eyebrow{margin-top:26px;font-size:22px;font-weight:700;letter-spacing:4px;color:var(--teal)}
-h1{margin-top:14px;font-size:68px;line-height:1.04;font-weight:800;letter-spacing:-1.5px}
-h1 span{color:var(--teal)}
-.bar{position:absolute;top:470px;left:0;right:0;height:150px;background:#fff;padding:22px 48px;display:flex;flex-direction:column;justify-content:space-between}
-.row{display:flex;align-items:center;gap:22px;font-size:26px;font-weight:700;color:var(--ink)}
-.row .sp{flex:1}
-.acct{display:flex;align-items:center;gap:18px}
-.av{width:62px;height:62px;border-radius:50%;border:2px solid #dce4eb;display:grid;place-items:center;overflow:hidden;background:#fff}
-.av img{width:56px}
-.acct b{display:block;font-size:24px;color:var(--ink)}
-.acct small{font-size:19px;color:var(--muted);font-weight:500}
-.photo{position:absolute;top:620px;left:0;right:0;height:636px;overflow:hidden}
-.photo>img{position:absolute;left:-60px;top:-350px;width:1320px}
-.pop{position:absolute;left:0;right:0;top:0;height:660px;overflow:hidden;pointer-events:none;z-index:5}
-.pop img{position:absolute;left:-60px;top:270px;width:1320px;filter:drop-shadow(0 14px 18px rgba(0,0,0,.35))}
-.nc{position:absolute;right:16px;bottom:12px;font-size:15px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
-.tag{position:absolute;left:40px;bottom:36px;background:var(--navy);color:#fff;padding:16px 26px;border-radius:14px;font-size:24px;font-weight:700;line-height:1.3}
-.tag span{color:var(--teal);display:block;font-size:20px}
-.foot{position:absolute;bottom:0;left:0;right:0;height:94px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:30px;font-weight:600;letter-spacing:1px}
-svg{width:40px;height:40px}
+:root{--navy:#0A2540;--navy2:#0E3157;--blue:#0B6DB7;--teal:#5FCFB0;--ink:#15212D;--muted:#586877;--line:#DCE4EB}
+body{width:1080px;height:1350px;font-family:Montserrat,Arial,sans-serif;background:var(--navy);position:relative;overflow:hidden;color:#fff}
+.top{position:absolute;inset:0 0 auto 0;height:520px;padding:40px 64px;
+ background:radial-gradient(520px 380px at 640px 420px,rgba(95,207,176,.22),transparent 70%),radial-gradient(700px 400px at -100px -50px,rgba(11,109,183,.35),transparent 70%),var(--navy)}
+.head{display:flex;justify-content:space-between;align-items:center}
+.logo{height:58px}
+.pill{border:1.5px solid rgba(95,207,176,.6);color:var(--teal);padding:10px 18px;border-radius:40px;font-size:17px;font-weight:700;letter-spacing:2px}
+.eyebrow{margin-top:34px;font-size:19px;font-weight:700;letter-spacing:3.5px;color:rgba(255,255,255,.7)}
+.eyebrow b{color:var(--teal)}
+h1{margin-top:12px;font-size:66px;line-height:1.03;font-weight:800;letter-spacing:-1.8px}
+h1 span{background:linear-gradient(90deg,#5FCFB0,#8FE3CB);-webkit-background-clip:text;color:transparent}
+ul{list-style:none;padding:0;margin-top:22px;display:grid;gap:10px;width:440px}
+li{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:600;color:rgba(255,255,255,.92)}
+li i{flex:none;width:26px;height:26px;border-radius:50%;background:var(--teal);display:grid;place-items:center}
+li i:after{content:"";width:9px;height:5px;border-left:3px solid var(--navy);border-bottom:3px solid var(--navy);transform:rotate(-45deg) translate(1px,-1px)}
+.bar{position:absolute;top:520px;left:0;right:0;height:110px;background:#fff;padding:0 44px;display:flex;align-items:center;gap:18px;color:var(--ink)}
+.av{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--teal));display:grid;place-items:center;font-size:22px;font-weight:800;color:#fff;box-shadow:0 0 0 3px #fff,0 0 0 5px var(--teal)}
+.acct b{display:block;font-size:22px}
+.acct small{font-size:17px;color:var(--muted);font-weight:500}
+.sp{flex:1}
+.icons{display:flex;gap:20px}
+svg{width:34px;height:34px}
+.photo{position:absolute;top:630px;left:0;right:0;height:540px;overflow:hidden}
+.photo>img{position:absolute;left:-60px;top:-360px;width:1320px}
+.photo:after{content:"";position:absolute;inset:auto 0 0 0;height:160px;background:linear-gradient(transparent,rgba(10,37,64,.85))}
+.pop{position:absolute;left:0;right:0;top:0;height:660px;overflow:hidden;z-index:5;pointer-events:none}
+.pop img{position:absolute;left:-60px;top:270px;width:1320px;filter:drop-shadow(0 16px 20px rgba(0,0,0,.4))}
+.badge{position:absolute;z-index:6;left:40px;bottom:206px;display:flex;align-items:center;gap:14px}
+.badge .pin{width:50px;height:50px;border-radius:14px;background:var(--teal);display:grid;place-items:center}
+.badge b{display:block;font-size:26px;font-weight:800}
+.badge small{font-size:18px;font-weight:600;color:rgba(255,255,255,.85)}
+.nc{position:absolute;z-index:6;right:18px;bottom:192px;font-size:14px;color:rgba(255,255,255,.75)}
+.cta{position:absolute;left:0;right:0;bottom:0;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.btn{background:linear-gradient(90deg,#5FCFB0,#7FDCC2);color:var(--navy);font-weight:800;font-size:30px;padding:22px 46px;border-radius:60px;box-shadow:0 10px 30px rgba(95,207,176,.35);display:flex;align-items:center;gap:14px}
+.btn span{font-size:34px}
+.sub{font-size:19px;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:.3px}
+.sub b{color:#fff}
 </style></head><body>
 <div class="top">
-<img class="logo" src="logo-blanc.png" alt="">
-<div class="eyebrow">LES JARDINS DE L'OURCQ · MEAUX (77)</div>
-<h1>Laissez-nous<br>vous guider<br><span>chez vous.</span></h1>
+ <div class="head"><img class="logo" src="logo-blanc.png" alt=""><div class="pill">PROGRAMME NEUF · VEFA</div></div>
+ <div class="eyebrow"><b>LES JARDINS DE L'OURCQ</b> · MEAUX (77)</div>
+ <h1>Laissez-nous<br>vous guider<br><span>chez vous.</span></h1>
+ <ul>
+  <li><i></i>Frais de notaire réduits</li>
+  <li><i></i>PTZ possible selon éligibilité</li>
+  <li><i></i>Achat sécurisé : garanties VEFA</li>
+ </ul>
 </div>
 <div class="bar">
-<div class="row">
-<svg viewBox="0 0 24 24"><path fill="#E0245E" d="M12 21s-7.5-4.6-9.6-9.1C.8 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.9 3.8 4.3 7.4C19.5 16.4 12 21 12 21z"/></svg>
-<svg viewBox="0 0 24 24" fill="none" stroke="#15212D" stroke-width="2"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"/></svg>
-<svg viewBox="0 0 24 24" fill="none" stroke="#15212D" stroke-width="2"><path d="M22 3 9.5 13.5M22 3l-7 18-5.5-7.5L2 10z"/></svg>
-<span class="sp"></span>
-<svg viewBox="0 0 24 24" fill="none" stroke="#15212D" stroke-width="2"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>
+ <div class="av">LC</div>
+ <div class="acct"><b>lescommercialisateurs</b><small>Immobilier neuf · Île-de-France</small></div>
+ <span class="sp"></span>
+ <div class="icons">
+ <svg viewBox="0 0 24 24"><path fill="#E0245E" d="M12 21s-7.5-4.6-9.6-9.1C.8 8.3 3 4.5 6.7 4.5c2.1 0 3.6 1.2 4.3 2.4.7-1.2 2.2-2.4 4.3-2.4 3.7 0 5.9 3.8 4.3 7.4C19.5 16.4 12 21 12 21z"/></svg>
+ <svg viewBox="0 0 24 24" fill="none" stroke="#15212D" stroke-width="2"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>
+ </div>
 </div>
-<div class="row"><div class="acct"><div class="av" style="background:linear-gradient(135deg,#0B6DB7,#5FCFB0);color:#fff;font-size:24px;font-weight:800;border:0">LC</div><div><b>lescommercialisateurs</b><small>Appartements neufs · Île-de-France</small></div></div><span class="sp"></span><span style="font-size:34px;letter-spacing:2px">···</span></div>
-</div>
-<div class="photo"><img src="scene.png" alt=""><div class="tag">Appartements neufs à Meaux<span>Du conseil à la remise des clés</span></div><div class="nc">Image non contractuelle</div></div>
+<div class="photo"><img src="scene.png" alt=""></div>
 <div class="pop"><img src="advisor.png" alt=""></div>
-<div class="foot">www.lescommercialisateurs.com</div>
+<div class="badge"><div class="pin"><svg viewBox="0 0 24 24" fill="#0A2540" style="width:28px;height:28px"><path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5z"/></svg></div><div><b>Appartements neufs à Meaux</b><small>Seine-et-Marne · à proximité de Paris</small></div></div>
+<div class="nc">Image non contractuelle</div>
+<div class="cta">
+ <div class="btn">Recevez la grille de prix et les plans <span>→</span></div>
+ <div class="sub"><b>Rendez-vous gratuit et sans engagement</b> · lescommercialisateurs.com</div>
+</div>
 </body></html>
